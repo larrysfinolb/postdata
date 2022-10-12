@@ -9,7 +9,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       theme={{
         /** Put your mantine theme override here */
         colorScheme: 'light',
-        fontFamily: 'Source Serif Pro, Work Sans',
+        fontFamily: 'Work Sans, Segoe UI',
+        fontFamilyMonospace: 'Monaco, Courier, monospace',
+        headings: { fontFamily: 'Source Serif Pro, sans-serif' },
         colors: {
           green: ['#006854'],
           yellow: ['#FCB84C'],
