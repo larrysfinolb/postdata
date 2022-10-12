@@ -13,7 +13,18 @@ function MyApp({ Component, pageProps }: AppProps) {
         fontFamilyMonospace: 'Monaco, Courier, monospace',
         headings: { fontFamily: 'Source Serif Pro, sans-serif' },
         colors: {
-          customGreen: ['#006854'],
+          customGreen: [
+            '#006854',
+            '#006854',
+            '#006854',
+            '#006854',
+            '#006854',
+            '#006854',
+            '#006854',
+            '#006854',
+            '#006854',
+            '#006854',
+          ],
           customYellow: ['#FCB84C'],
         },
       }}
