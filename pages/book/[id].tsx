@@ -45,7 +45,7 @@ type Book = {
 };
 
 function Book() {
-  const [book, setBook] = React.useState(Array<Book>);
+  const [book, setBook] = React.useState(Array<Book>());
 
   React.useEffect(() => {
     setBook(data);
@@ -74,45 +74,43 @@ function Book() {
   };
 
   return (
-    <Layout title='Detalles del libro' Header={<Header />}>
-      <Container size={1024} px={12}>
-        {book.length === 0 ? (
-          <LoadingOverlay visible={true} overlayBlur={2} />
-        ) : (
-          <Grid gutter={0}>
-            <Grid.Col span={5}>
-              <div style={{ ...stylesContainer, alignItems: 'center' }}>
-                <div style={stylesImage}>
-                  <Image src={`${book[0].coverUrl}`} alt={`Portada del libro ${book[0].title}`} />
-                </div>
-
-                <Text style={stylesPrice}>{`${book[0].price} BC`}</Text>
-
-                <MainButton size='xl'>Comprar</MainButton>
+    <Layout title="Detalles del libro" Header={<Header />}>
+      {book.length === 0 ? (
+        <LoadingOverlay visible={true} overlayBlur={2} />
+      ) : (
+        <Grid gutter={0}>
+          <Grid.Col span={5}>
+            <div style={{ ...stylesContainer, alignItems: 'center' }}>
+              <div style={stylesImage}>
+                <Image src={`${book[0].coverUrl}`} alt={`Portada del libro ${book[0].title}`} />
               </div>
-            </Grid.Col>
-            <Grid.Col span={6} offset={1}>
-              <section style={{ ...stylesContainer, gap: '3rem' }}>
-                <div style={stylesContainer}>
-                  <div>
-                    <Heading order={1}>{book[0].title}</Heading>
-                    <p style={styleAuthor}>{book[0].author}</p>
-                  </div>
 
-                  <ListBadges>{book[0].genders}</ListBadges>
+              <Text style={stylesPrice}>{`${book[0].price} BC`}</Text>
+
+              <MainButton size="xl">Comprar</MainButton>
+            </div>
+          </Grid.Col>
+          <Grid.Col span={6} offset={1}>
+            <section style={{ ...stylesContainer, gap: '3rem' }}>
+              <div style={stylesContainer}>
+                <div>
+                  <Heading order={1}>{book[0].title}</Heading>
+                  <p style={styleAuthor}>{book[0].author}</p>
                 </div>
 
-                <article style={stylesContainer}>
-                  <Heading order={2} size='h3'>
-                    {book[0].title}
-                  </Heading>
-                  <Paragraph>{book[0].sinopsis}</Paragraph>
-                </article>
-              </section>
-            </Grid.Col>
-          </Grid>
-        )}
-      </Container>
+                <ListBadges>{book[0].genders}</ListBadges>
+              </div>
+
+              <article style={stylesContainer}>
+                <Heading order={2} size="h3">
+                  {book[0].title}
+                </Heading>
+                <Paragraph>{book[0].sinopsis}</Paragraph>
+              </article>
+            </section>
+          </Grid.Col>
+        </Grid>
+      )}
     </Layout>
   );
 }
