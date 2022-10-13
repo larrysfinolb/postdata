@@ -1,8 +1,9 @@
 import React from 'react';
 import { Group, Autocomplete, Container, MantineTheme } from '@mantine/core';
 import Header from 'components/Header';
-import Link from 'components/Link';
+import Link from 'components/NavLink';
 import { Search } from 'tabler-icons-react';
+import NavProfile from 'components/NavProfile';
 
 const flexStyles: object = {
   display: 'flex',
@@ -13,7 +14,7 @@ const flexStyles: object = {
 };
 
 type Props = {
-  innerPadding: number;
+  innerPadding?: number;
 };
 
 function index({ innerPadding = 8 }: Props) {
@@ -54,13 +55,14 @@ function index({ innerPadding = 8 }: Props) {
           style={{
             ...flexStyles,
             width: 'auto',
-            maxWidth: '50%',
+            maxWidth: '70%',
             margin: '0',
           }}
         >
           <form
             style={{
               width: '100%',
+              minWidth: '400px',
             }}
           >
             <Autocomplete
@@ -82,7 +84,7 @@ function index({ innerPadding = 8 }: Props) {
               })}
             />
           </form>
-          <div>profile data placeholder</div>
+          <NavProfile />
         </Container>
       </Group>
     </Header>

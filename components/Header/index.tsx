@@ -12,7 +12,7 @@ function index({ children, widthContent = 1012 }: Props) {
   });
 
   return (
-    <Header height={60} styles={styles}>
+    <Header height={65} styles={styles}>
       <Container
         fluid
         style={{
