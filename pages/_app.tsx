@@ -26,9 +26,9 @@ function MyApp({ Component, pageProps }: AppProps) {
             '#006854',
           ],
           customYellow: ['#FCB84C'],
+          customBlack: ['#3C3C3C'],
         },
-      }}
-    >
+      }}>
       <Component {...pageProps} />
     </MantineProvider>
   );
