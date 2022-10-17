@@ -11,7 +11,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         colorScheme: 'light',
         fontFamily: 'Work Sans, Segoe UI',
         fontFamilyMonospace: 'Monaco, Courier, monospace',
-        headings: { fontFamily: 'Source Serif Pro, sans-serif' },
+        headings: { fontFamily: 'Source Serif Pro, Times New Roman, sans-serif' },
         colors: {
           customGreen: [
             '#006854',
@@ -28,7 +28,8 @@ function MyApp({ Component, pageProps }: AppProps) {
           customYellow: ['#FCB84C'],
           customBlack: ['#3C3C3C'],
         },
-      }}>
+      }}
+    >
       <Component {...pageProps} />
     </MantineProvider>
   );
