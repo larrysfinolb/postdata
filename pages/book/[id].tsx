@@ -1,11 +1,11 @@
 import React from 'react';
-import { Container, Grid, MantineTheme, Image, LoadingOverlay, Text, useMantineTheme } from '@mantine/core';
+import { Grid, MantineTheme, Image, LoadingOverlay, Text, useMantineTheme } from '@mantine/core';
 import Layout from 'components/Layout';
 import Header from 'components/HeaderUser';
 import Heading from 'components/Heading';
 import Paragraph from 'components/Paragraph';
 import ListBadges from 'components/ListBadges';
-import MainButton from 'components/Button';
+import MainButton from 'components/MainButton';
 
 const data = [
   {
@@ -74,7 +74,7 @@ function Book() {
   };
 
   return (
-    <Layout title="Detalles del libro" Header={<Header />}>
+    <Layout title='Detalles del libro' Header={<Header />}>
       {book.length === 0 ? (
         <LoadingOverlay visible={true} overlayBlur={2} />
       ) : (
@@ -87,7 +87,7 @@ function Book() {
 
               <Text style={stylesPrice}>{`${book[0].price} BC`}</Text>
 
-              <MainButton size="xl">Comprar</MainButton>
+              <MainButton size='xl'>Comprar</MainButton>
             </div>
           </Grid.Col>
           <Grid.Col span={6} offset={1}>
@@ -102,7 +102,7 @@ function Book() {
               </div>
 
               <article style={stylesContainer}>
-                <Heading order={2} size="h3">
+                <Heading order={2} size='h3'>
                   {book[0].title}
                 </Heading>
                 <Paragraph>{book[0].sinopsis}</Paragraph>

@@ -4,9 +4,10 @@ import { Button, MantineTheme, useMantineTheme } from '@mantine/core';
 type Props = {
   children: string;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  fullWidth?: boolean;
 };
 
-function MainButton({ children, size }: Props) {
+function MainButton({ children, size, fullWidth }: Props) {
   const theme: MantineTheme = useMantineTheme();
   const styles = {
     root: {
@@ -21,7 +22,7 @@ function MainButton({ children, size }: Props) {
   };
 
   return (
-    <Button size={size} uppercase styles={styles}>
+    <Button size={size} uppercase styles={styles} fullWidth={fullWidth}>
       {children}
     </Button>
   );
