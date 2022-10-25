@@ -14,6 +14,7 @@ import { DatePicker } from '@mantine/dates';
 import Link from 'next/link';
 import { termsAndConditions } from 'utils/termsAndConditions';
 import dayjs from 'dayjs';
+import 'dayjs/locale/es';
 
 type Props = {};
 
@@ -158,7 +159,8 @@ function Index({}: Props) {
         style={{ gridArea: 'birthday' }}
         styles={textInputStyles}
         minDate={dayjs(new Date()).startOf('year').subtract(80, 'years').toDate()}
-        maxDate={dayjs(new Date()).startOf('year').subtract(16, 'years').toDate()}
+        maxDate={dayjs(new Date()).startOf('day').subtract(16, 'years').toDate()}
+        locale="es"
       />
       <Radio.Group name="sex" label="Sexo" withAsterisk required>
         <Radio required value="male" label="Hombre" styles={checkBoxInputStyles} />
