@@ -2,7 +2,7 @@ import Layout from 'components/Layout';
 import Header from 'components/HeaderUser';
 import Heading from 'components/Heading';
 import { SimpleGrid, Container } from '@mantine/core';
-import SignupForm from 'components/SignupForm';
+import SignupForm from 'components/Forms/SignupForm';
 
 type Props = {};
 
@@ -28,7 +28,7 @@ function signup({}: Props) {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
+            gridTemplateColumns: '2fr 1fr',
             width: '100%',
             placeItems: 'center',
           }}
