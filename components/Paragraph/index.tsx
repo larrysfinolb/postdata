@@ -1,19 +1,22 @@
 import React from 'react';
 import { MantineTheme, useMantineTheme } from '@mantine/core';
+import styled from '@emotion/styled';
 
 type Props = {
   children: string;
+  align?: string;
 };
 
-function Paragraph({ children }: Props) {
+function Paragraph({ children, align }: Props) {
   const theme: MantineTheme = useMantineTheme();
-  const styles = {
-    margin: 0,
-    lineHeight: '160%',
-    color: theme.colors.customBlack[0],
-  };
+  const P = styled.p`
+    margin: 0;
+    line-heigth: '160%';
+    color: ${theme.colors.customBlack[0]};
+    text-align: ${align ? align : 'left'};
+  `;
 
-  return <p style={styles}>{children}</p>;
+  return <P>{children}</P>;
 }
 
 export default Paragraph;
