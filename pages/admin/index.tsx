@@ -19,7 +19,7 @@ const ResetPassword = styled.button`
   }
 `;
 
-function login() {
+function AdminLogin() {
   const router = useRouter();
   const [InvalidCredentials, setInvalidCredentials] = React.useState(false);
   const [session, setSession] = React.useState(null);
@@ -186,4 +186,4 @@ function login() {
   );
 }
 
-export default login;
+export default AdminLogin;
