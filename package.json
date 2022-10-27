@@ -11,11 +11,13 @@
   "dependencies": {
     "@emotion/react": "^11.10.4",
     "@emotion/server": "^11.10.0",
+    "@emotion/styled": "^11.10.4",
     "@mantine/core": "^5.5.5",
     "@mantine/dates": "^5.5.5",
     "@mantine/form": "^5.5.5",
     "@mantine/hooks": "^5.5.5",
     "@mantine/next": "^5.5.5",
+    "@supabase/supabase-js": "^2.0.2",
     "dayjs": "^1.11.5",
     "next": "12.3.1",
     "react": "18.2.0",
