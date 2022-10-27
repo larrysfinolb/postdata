@@ -22,22 +22,36 @@ const ResetPassword = styled.button`
 function login() {
   const router = useRouter();
   const [InvalidCredentials, setInvalidCredentials] = React.useState(false);
+  const [session, setSession] = React.useState(null);
   const [opened, setOpened] = React.useState(false);
 
   React.useEffect(() => {
     const getSession = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession();
+        type Result = {
+          data: any;
+          error: any;
+        };
+        const {
+          data: { session },
+          error,
+        }: Result = await supabase.auth.getSession();
 
         if (error) throw error;
-        if (data) router.push('/admin/book-dashboard');
+        if (session?.user.id !== '9feda9d6-0cec-4daf-9ce9-10d471104398') {
+          const { error } = await supabase.auth.signOut();
+
+          if (error) throw error;
+        } else {
+          router.push('/admin/client-dashboard');
+        }
       } catch (error) {
         console.error(error);
       }
     };
 
     getSession();
-  }, []);
+  }, [session]);
 
   const formLogin = useForm({
     initialValues: {
@@ -111,13 +125,17 @@ function login() {
           <form
             onSubmit={formLogin.onSubmit(async values => {
               try {
-                const { data, error } = await supabase.auth.signInWithPassword({
+                type Result = {
+                  data: any;
+                  error: any;
+                };
+                const { data, error }: Result = await supabase.auth.signInWithPassword({
                   email: values.email,
                   password: values.password,
                 });
 
                 if (error) throw error;
-                if (data) throw router.push('/admin/book-dashboard');
+                if (data) setSession(data?.session);
               } catch (error) {
                 setInvalidCredentials(true);
               }
@@ -129,6 +147,7 @@ function login() {
               gap: '1rem',
             }}>
             <TextInput
+              color='yellow'
               placeholder='ejemplo@ejemplo.com'
               label='Correo eléctronico'
               withAsterisk
@@ -136,17 +155,18 @@ function login() {
               {...formLogin.getInputProps('email')}
             />
             <PasswordInput
+              color='yellow'
               placeholder='Contraseña super segura'
               label='Contraseña'
               withAsterisk
               style={{ gridArea: 'password' }}
               {...formLogin.getInputProps('password')}
             />
-            <Button type='submit' style={{ gridArea: 'submit' }} color='green'>
+            <Button type='submit' style={{ gridArea: 'submit' }} color='yellow'>
               Inciar sesión
             </Button>
             <Link href='/index'>
-              <Button component='a' variant='outline' style={{ gridArea: 'cancel' }} color='yellow'>
+              <Button component='a' variant='outline' style={{ gridArea: 'cancel' }} color='green'>
                 Regresar como cliente
               </Button>
             </Link>
