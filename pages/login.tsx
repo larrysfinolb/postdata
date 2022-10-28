@@ -1,12 +1,10 @@
 import Layout from 'components/Layout';
 import Header from 'components/HeaderUser';
 import Heading from 'components/Heading';
-import { SimpleGrid, Container } from '@mantine/core';
+import { Container } from '@mantine/core';
 import LoginForm from 'components/Forms/LoginForm';
 
-type Props = {};
-
-function Login({}: Props) {
+function Login() {
   return (
     <Layout title="signup" Header={<Header />}>
       <Heading
@@ -16,7 +14,7 @@ function Login({}: Props) {
           textAlign: 'center',
         }}
       >
-        {'Inicia sesión'}
+        Inicia sesión
       </Heading>
       <Container
         style={{

@@ -1,12 +1,10 @@
 import Layout from 'components/Layout';
 import Header from 'components/HeaderUser';
 import Heading from 'components/Heading';
-import { SimpleGrid, Container } from '@mantine/core';
+import { Container } from '@mantine/core';
 import SignupForm from 'components/Forms/SignupForm';
 
-type Props = {};
-
-function signup({}: Props) {
+function signup() {
   return (
     <Layout title="signup" Header={<Header />}>
       <Heading
@@ -16,7 +14,7 @@ function signup({}: Props) {
           textAlign: 'center',
         }}
       >
-        {'Registrate para convertirte en usuario de Postdata'}
+        Registrate para convertirte en usuario de Postdata
       </Heading>
       <Container
         style={{
