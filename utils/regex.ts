@@ -9,6 +9,7 @@ const REGEX = {
   copies: /^[0-9]+$/,
   status: /^true|false$/,
   active: /^true|false$/,
+  account: /^[0-9]{20,20}$/,
 };
 
 export default REGEX;
