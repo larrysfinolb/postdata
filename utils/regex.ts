@@ -1,6 +1,7 @@
 const REGEX = {
   id: /^[0-9]*$/,
   fullname: /^[A-Za-zÀ-ÿ\s\.\-]+$/,
+  name: /^[A-Za-zÀ-ÿ\s\.\-]+$/,
   title: /^[A-Za-zÀ-ÿ0-9\s\-_,\.;:()]+$/,
   synopsis: /^[A-Za-zÀ-ÿ0-9\s\-_,\.;:()]{0,}/,
   language: /^[a-z]{2,2}$/,
