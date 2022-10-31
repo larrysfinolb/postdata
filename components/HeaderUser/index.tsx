@@ -41,13 +41,13 @@ function index({ innerPadding = 8 }: Props) {
             }}
           >
             <li>
-              <Link url="#">Inicio</Link>
+              <Link url="/">Inicio</Link>
             </li>
             <li>
-              <Link url="#">Libros</Link>
+              <Link url="/books">Libros</Link>
             </li>
             <li>
-              <Link url="#">FAQ</Link>
+              <Link url="/faq">FAQ</Link>
             </li>
           </ul>
         </nav>
