@@ -48,7 +48,7 @@ function HeaderAdmin({ innerPadding = 8 }: Props) {
           padding: `0 ${innerPadding}px`,
           flexWrap: 'nowrap',
         }}>
-        <nav>
+        <nav style={{width: '100%'}}>
           <ul
             style={{
               height: '100%',
