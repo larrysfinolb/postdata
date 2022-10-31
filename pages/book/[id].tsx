@@ -1,11 +1,10 @@
 import React from 'react';
-import { Grid, MantineTheme, Image, LoadingOverlay, Text, useMantineTheme } from '@mantine/core';
+import { Grid, MantineTheme, Image, LoadingOverlay, Text, useMantineTheme, Button } from '@mantine/core';
 import Layout from 'components/Layout';
 import Header from 'components/HeaderUser';
 import Heading from 'components/Heading';
 import Paragraph from 'components/Paragraph';
 import ListBadges from 'components/ListBadges';
-import MainButton from 'components/MainButton';
 
 const data = [
   {
@@ -87,7 +86,7 @@ function Book() {
 
               <Text style={stylesPrice}>{`${book[0].price} BC`}</Text>
 
-              <MainButton size='xl'>Comprar</MainButton>
+              <Button size='xl'>Comprar</Button>
             </div>
           </Grid.Col>
           <Grid.Col span={6} offset={1}>
