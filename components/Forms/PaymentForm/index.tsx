@@ -1,44 +1,48 @@
-import { Button, Checkbox, NumberInput, Radio, TextInput } from '@mantine/core';
+import {
+  Alert,
+  Button,
+  Checkbox,
+  NumberInput,
+  Radio,
+  TextInput,
+} from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
-import { useForm } from '@mantine/form';
 import React from 'react';
-import REGEX from 'utils/regex';
+import useUpdateValues from 'hooks/useUpdateValues';
 
-function PaymentForm() {
+type Props = {
+  form: any;
+  setLoad: Function;
+  setShowSpinner: Function;
+};
+
+function PaymentForm({ form, setLoad, setShowSpinner }: Props) {
   const [status, setStatus] = React.useState('');
-
-  const form = useForm({
-    initialValues: {
-      id: '',
-      amount: '',
-      client: '',
-      bank: '',
-      voucher: '',
-      active: 'false',
-    },
-
-    validate: {
-      id: (value) => (REGEX.id.test(value) ? null : 'Formato del id invalido.'),
-      amount: (value) =>
-        REGEX.price.test(value) ? null : 'Formato del monto invalido.',
-      client: (value) =>
-        REGEX.name.test(value) ? null : 'Formato del cliente invalido.',
-      bank: (value) =>
-        REGEX.name.test(value) ? null : 'Formato del banco invalido.',
-      voucher: (value) => (value ? null : 'Selecciona el comprobante de pago'),
-      active: (value) =>
-        REGEX.active.test(value) ? null : 'Formato del estado invalido.',
-    },
-  });
+  const [error, setError] = React.useState('');
 
   return (
     <form
-      onSubmit={form.onSubmit((values) => {})}
+      onSubmit={form.onSubmit(async (values: any) => {
+        if (values.id) {
+          const result: any = await useUpdateValues(
+            'payments',
+            {
+              status: values.number,
+              active: values.active,
+            },
+            form,
+            setShowSpinner,
+            setLoad
+          );
+
+          if (result) setError(result);
+        }
+      })}
       style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
         gridTemplateAreas:
-          '"id amount" "client bank" "voucher voucher" "status status" "active active" "created created" "submit submit"',
+          '"id amount" "client bank" "voucher voucher" "status status" "active active" "submit reset"',
         gap: '1rem',
       }}
     >
@@ -46,6 +50,7 @@ function PaymentForm() {
         label="ID"
         placeholder="Tu no debes de llenar este campo."
         disabled
+        withAsterisk
         style={{ gridArea: 'id' }}
         {...form.getInputProps('id')}
       />
@@ -96,18 +101,31 @@ function PaymentForm() {
         color="yellow"
         label="Estado"
         style={{ gridArea: 'active' }}
-        {...form.getInputProps('active')}
+        {...form.getInputProps('active', { type: 'checkbox' })}
       />
-      <DatePicker
-        label="Fecha de creación"
-        placeholder="Tu no debes de llenar este campo."
-        withAsterisk
-        disabled
-        style={{ gridArea: 'created' }}
-      />
-      <Button color="yellow" type="submit" style={{ gridArea: 'submit' }}>
+      <Button
+        color="yellow"
+        type="submit"
+        uppercase
+        style={{ gridArea: 'submit' }}
+      >
         Confirmar
       </Button>
+      <Button
+        color="green"
+        type="button"
+        variant="outline"
+        uppercase
+        style={{ gridArea: 'reset' }}
+        onClick={() => form.reset()}
+      >
+        Limpiar
+      </Button>
+      {error && (
+        <Alert title="¡Error!" color="red" style={{ gridColumn: '1 / 3' }}>
+          {error}
+        </Alert>
+      )}
     </form>
   );
 }
