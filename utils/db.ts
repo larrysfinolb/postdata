@@ -1,5 +1,17 @@
 import supabase from './supabase';
 
+const getAll = async (table: string) => {
+  try {
+    const result: any = await supabase.from(table).select('*');
+
+    if (result.error) throw result.error.details;
+
+    return { data: result.data, error: null };
+  } catch (error) {
+    return { data: null, error: error };
+  }
+};
+
 const getLastInsert = async (table: string) => {
   try {
     const result: any = await supabase.from(table).select('*');
@@ -50,4 +62,4 @@ const deleteInDB = async (table: string, id: number) => {
   }
 };
 
-export { getLastInsert, insertInDB, updateInDB, deleteInDB };
+export { getAll, getLastInsert, insertInDB, updateInDB, deleteInDB };

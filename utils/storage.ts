@@ -4,7 +4,7 @@ const uploadFile = async (bucket: string, name: string, file: File) => {
   try {
     const result: any = await supabase.storage
       .from(bucket)
-      .upload(`${name}.png`, file, { upsert: true });
+      .upload(`${name}`, file, { upsert: true });
 
     if (result.error) throw result.error.details;
 
