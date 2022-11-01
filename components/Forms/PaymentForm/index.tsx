@@ -7,7 +7,7 @@ import {
   TextInput,
 } from '@mantine/core';
 import React from 'react';
-import { updateInDB } from 'utils/DB';
+import { updateInDB } from 'utils/db';
 
 type Props = {
   form: any;
