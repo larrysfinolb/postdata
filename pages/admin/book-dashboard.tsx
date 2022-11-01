@@ -11,7 +11,6 @@ import {
   NumberInput,
   Textarea,
   MultiSelect,
-  FileInput,
   Select,
 } from '@mantine/core';
 import Layout from 'components/Layout';
@@ -21,50 +20,50 @@ import Container from 'components/Container';
 import { useForm } from '@mantine/form';
 import REGEX from 'utils/regex';
 import { DatePicker } from '@mantine/dates';
-import useUpdateValues from 'hooks/useUpdateValues';
-import useInsertValues from 'hooks/useInsertValues';
+import supabase from 'utils/supabase';
+import FileInput from 'components/FileInput';
 
 function ClientDashboard() {
   const [showSpinner, setShowSpinner] = React.useState(false);
   const [error, setError] = React.useState('');
 
-  const [publicationDate, setPublicationDate]: any = React.useState(new Date());
-  const [selectAuthors, setSelectAuthors]: any = React.useState([]);
-  const [selectGenres, setSelectGenres]: any = React.useState([]);
-
+  const { data: books, setLoad: setLoadBooks }: any = useData(
+    'books',
+    setShowSpinner
+  );
+  const { data: authors }: any = useData('authors', setShowSpinner);
   const { data: genres } = useData('genres', setShowSpinner);
-  const { data: authors } = useData('authors', setShowSpinner);
-  const { data: books } = useData('books', setShowSpinner);
-  const { data: books_has_authors } = useData(
-    'books_has_authors',
-    setShowSpinner
-  );
-  const { data: books_has_genres, setLoad } = useData(
-    'books_has_genres',
-    setShowSpinner
-  );
+  const { data: books_has_authors, setLoad: setLoadBookHasAuthors }: any =
+    useData('books_has_authors', setShowSpinner);
+  const { data: books_has_genres, setLoad: setLoadBooksHasGenres }: any =
+    useData('books_has_genres', setShowSpinner);
 
   const form = useForm({
     initialValues: {
       id: '',
       title: '',
+      publication_date: new Date(),
       synopsis: '',
       language: '',
-      coverUrl: '',
+      cover_url: '',
+      cover_file: {},
+      authors_id: [],
+      genres_id: [],
       price: 0,
       copies: 0,
       active: false,
     },
 
     validate: {
-      id: (value) => (REGEX.id.test(value) ? null : 'Formato de ID invalido.'),
       title: (value) =>
         REGEX.title.test(value) ? null : 'Formato de título invalido.',
-      synopsis: (value) =>
-        REGEX.synopsis.test(value) ? null : 'Formato de sinopsis invalido.',
+      publication_date: (value) => (value ? null : 'Selecciona una fecha.'),
       language: (value) =>
         REGEX.language.test(value) ? null : 'Formato de idioma invalido.',
-      coverUrl: (value) => (value ? null : 'Selecciona una imagen.'),
+      authors_id: (value) =>
+        value.length > 0 ? null : 'Selecciona los autores.',
+      genres_id: (value) =>
+        value.length > 0 ? null : 'Selecciona los géneros',
       price: (value) => (value >= 0.001 ? null : 'Rango de precio invalido.'),
       copies: (value) => (value >= 0 ? null : 'Rango de copias invalido.'),
     },
@@ -99,14 +98,20 @@ function ClientDashboard() {
                     form.setValues({
                       id: item.id,
                       title: item.title,
+                      publication_date: new Date(item.publication_date),
                       synopsis: item.synopsis,
                       language: item.language,
-                      coverUrl: item.cover_url,
+                      cover_url: item.cover_url,
+                      authors_id: books_has_authors.map((b_h_a: any) => {
+                        if (b_h_a.books_id === item.id) return b_h_a.authors_id;
+                      }),
+                      genres_id: books_has_genres.map((b_h_g: any) => {
+                        if (b_h_g.books_id === item.id) return b_h_g.genres_id;
+                      }),
                       price: item.price,
                       copies: item.copies,
-                      active: item.actie,
+                      active: item.active,
                     });
-                    setPublicationDate(new Date(item.publication_date));
                   }}
                 >
                   <td>{item.id}</td>
@@ -125,73 +130,144 @@ function ClientDashboard() {
             display: 'grid',
             gridTemplateColumns: '1fr 1rf',
             gridTemplateAreas:
-              '"id publicationDate" "title title" "language coverUrl" "authors genres" "synopsis synopsis" "copies price" "active active" "submit reset"',
+              '"id publicationDate" "title title" "language cover_url" "authors genres" "synopsis synopsis" "copies price" "active active" "submit reset"',
             gap: '1rem',
           }}
           onSubmit={form.onSubmit(async (values: any) => {
-            if (values.id) {
-              const result: any = await useUpdateValues(
-                'books',
-                {
-                  id: values.id,
-                  publication_date: publicationDate,
-                  title: values.title,
-                  synopsis: values.synopsis,
-                  language: values.language,
-                  coverUrl: values.cover_url,
-                  price: values.price,
-                  copies: values.copies,
-                  active: values.active,
-                },
-                form,
-                setShowSpinner,
-                setLoad
-              );
+            let { id, authors_id, genres_id, cover_file, ...newValues } =
+              values;
 
-              if (result) setError(result);
-              else {
-                console.log('se actualizo');
+            if (id) {
+              try {
+                setShowSpinner(true);
+                const { data: dataFile, error: errorFile }: any =
+                  await supabase.storage
+                    .from('covers')
+                    .upload(`${values.title}.png`, cover_file, {
+                      upsert: true,
+                    });
 
-                selectAuthors.map(async (item: any) => {});
+                if (errorFile) throw errorFile;
 
-                console.log(selectAuthors);
-                console.log(selectGenres);
-              }
-            } else {
-              const result: any = await useInsertValues(
-                'books',
-                {
-                  publication_date: publicationDate,
-                  title: values.title,
-                  synopsis: values.synopsis,
-                  language: values.language,
-                  coverUrl: '',
-                  price: values.price,
-                  copies: values.copies,
-                  active: values.active,
-                },
-                form,
-                setShowSpinner,
-                setLoad
-              );
+                const {
+                  data: { publicUrl },
+                } = await supabase.storage
+                  .from('covers')
+                  .getPublicUrl(dataFile.path);
 
-              if (result) setError(result);
-              else {
-                selectAuthors.map(async (item: any) => {
-                  const result: any = await useInsertValues(
-                    'books_has_authors',
-                    {
-                      books_id: 1,
-                      authors_id: item.id,
-                    },
-                    form,
-                    setShowSpinner,
-                    setLoad
-                  );
+                newValues.cover_url = publicUrl;
+
+                const { error } = await supabase
+                  .from('books')
+                  .update(newValues)
+                  .eq('id', id);
+                if (error) throw error;
+
+                books_has_authors.map(async (item: any) => {
+                  if (item.books_id === id) {
+                    const { error } = await supabase
+                      .from('books_has_authors')
+                      .delete()
+                      .eq('id', item.id);
+
+                    if (error) throw error;
+                  }
+                });
+                books_has_genres.map(async (item: any) => {
+                  if (item.books_id === id) {
+                    const { error } = await supabase
+                      .from('books_has_genres')
+                      .delete()
+                      .eq('id', item.id);
+
+                    if (error) throw error;
+                  }
                 });
 
-                console.log(selectAuthors);
-                console.log(selectGenres);
+                authors_id.map(async (item: any) => {
+                  console.log(item);
+                  const { error } = await supabase
+                    .from('books_has_authors')
+                    .insert([{ books_id: id, authors_id: item }]);
+
+                  if (error) throw error;
+                });
+
+                genres_id.map(async (item: any) => {
+                  const { error } = await supabase
+                    .from('books_has_genres')
+                    .insert([{ books_id: id, genres_id: item }]);
+
+                  if (error) throw error;
+                });
+
+                form.reset();
+                setLoadBooks(true);
+                setLoadBookHasAuthors(true);
+                setLoadBooksHasGenres(true);
+                setShowSpinner(false);
+              } catch (error) {
+                console.log(error);
+                setShowSpinner(false);
+              }
+            } else {
+              try {
+                setShowSpinner(true);
+                const { data: dataFile, error: errorFile }: any =
+                  await supabase.storage
+                    .from('covers')
+                    .upload(`${values.title}.png`, cover_file, {
+                      upsert: true,
+                    });
+
+                if (errorFile) throw errorFile;
+
+                const {
+                  data: { publicUrl },
+                } = await supabase.storage
+                  .from('covers')
+                  .getPublicUrl(dataFile.path);
+
+                newValues.cover_url = publicUrl;
+
+                const { error: errorBook } = await supabase
+                  .from('books')
+                  .insert([newValues]);
+
+                if (errorBook) throw errorBook;
+
+                const { data: dataIDs, error: errorIDs }: any = await supabase
+                  .from('books')
+                  .select('id');
+
+                if (errorIDs) throw errorIDs;
+
+                id = dataIDs[dataIDs.length - 1].id;
+
+                authors_id.map(async (item: any) => {
+                  const { error } = await supabase
+                    .from('books_has_authors')
+                    .insert([{ books_id: id, authors_id: item }]);
+
+                  if (error) throw error;
+                });
+
+                genres_id.map(async (item: any) => {
+                  const { error } = await supabase
+                    .from('books_has_genres')
+                    .insert([{ books_id: id, genres_id: item }]);
+
+                  if (error) throw error;
+                });
+
+                form.reset();
+                setLoadBooks(true);
+                setLoadBookHasAuthors(true);
+                setLoadBooksHasGenres(true);
+                setShowSpinner(false);
+              } catch (error) {
+                console.log(error);
+                setShowSpinner(false);
               }
             }
           })}
@@ -205,9 +281,9 @@ function ClientDashboard() {
           />
           <DatePicker
             label="Fecha de publicación"
-            value={publicationDate}
-            onChange={setPublicationDate}
+            withAsterisk
             style={{ gridArea: 'publicationDate' }}
+            {...form.getInputProps('publication_date')}
           />
           <TextInput
             label="Título"
@@ -230,19 +306,16 @@ function ClientDashboard() {
             {...form.getInputProps('language')}
           />
           <FileInput
+            inputPropsUrl={form.getInputProps('cover_url')}
+            inputPropsFile={form.getInputProps('cover_file')}
             label="Portada"
-            placeholder="Seleccione una imagen"
-            accept="image/png,image/jpeg"
-            withAsterisk
-            style={{ gridArea: 'coverUrl' }}
-            {...form.getInputProps('coverUrl')}
+            placeholder="Url de la imagen"
+            title="Portada del libro"
           />
           <MultiSelect
             label="Autores"
             placeholder="Seleccione los autores"
             nothingFound="No se ha encontrado coincidencias"
-            value={selectAuthors}
-            onChange={setSelectAuthors}
             searchable
             withAsterisk
             data={authors.map((item: any) => ({
@@ -250,13 +323,12 @@ function ClientDashboard() {
               label: item.name,
             }))}
             style={{ gridArea: 'authors' }}
+            {...form.getInputProps('authors_id')}
           />
           <MultiSelect
             label="Géneros"
             placeholder="Seleccione los géneros"
             nothingFound="No se ha encontrado coincidencias"
-            value={selectGenres}
-            onChange={setSelectGenres}
             searchable
             withAsterisk
             data={genres.map((item: any) => ({
@@ -264,6 +336,7 @@ function ClientDashboard() {
               label: item.name,
             }))}
             style={{ gridArea: 'genres' }}
+            {...form.getInputProps('genres_id')}
           />
           <Textarea
             label="Sinopsis"
@@ -274,7 +347,6 @@ function ClientDashboard() {
           />
           <NumberInput
             label="Copias"
-            placeholder="23"
             min={0}
             withAsterisk
             style={{ gridArea: 'copies' }}
@@ -282,7 +354,6 @@ function ClientDashboard() {
           />
           <NumberInput
             label="Precio"
-            placeholder="15"
             min={0.01}
             step={0.01}
             precision={2}
@@ -310,12 +381,7 @@ function ClientDashboard() {
             variant="outline"
             uppercase
             style={{ gridArea: 'reset' }}
-            onClick={() => {
-              form.reset();
-              setPublicationDate(new Date());
-              setSelectAuthors([]);
-              setSelectGenres([]);
-            }}
+            onClick={() => form.reset()}
           >
             Limpiar
           </Button>
