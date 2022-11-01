@@ -1,7 +1,7 @@
 import { Alert, Button, Checkbox, TextInput } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
 import React from 'react';
-import { updateInDB } from 'utils/DB';
+import { updateInDB } from 'utils/db';
 
 type Props = {
   form: any;
