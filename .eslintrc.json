@@ -1,37 +1,3 @@
 {
-  "env": {
-    "browser": true,
-    "es2021": true,
-    "node": true
-  },
-  "extends": [],
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaFeatures": {
-      "jsx": true
-    },
-    "ecmaVersion": "latest",
-    "sourceType": "module",
-    "project": "./tsconfig.json"
-  },
-  "plugins": ["react", "@typescript-eslint", "import", "prettier"],
-  "settings": {
-    "import/parsers": {
-      "@typescript-eslint/parser": [".ts", ".tsx"]
-    },
-    "import/resolver": {
-      "typescript": {
-        "alwaysTryTypes": true
-      }
-    }
-  },
-  "rules": {
-    "react/react-in-jsx-scope": "off",
-    "linebreak-style": "off",
-    "import/no-unresolved": "error",
-    "react/require-default-props": "off",
-    "react/function-component-definition": "off",
-    "@typescript-eslint/naming-convention": "warn",
-    "react/jsx-props-no-spreading": "warn"
-  }
+  "extends": "next/core-web-vitals"
 }
