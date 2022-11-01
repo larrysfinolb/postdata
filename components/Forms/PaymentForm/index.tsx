@@ -6,9 +6,8 @@ import {
   Radio,
   TextInput,
 } from '@mantine/core';
-import { DatePicker } from '@mantine/dates';
 import React from 'react';
-import useUpdateValues from 'hooks/useUpdateValues';
+import { updateInDB } from 'utils/DB';
 
 type Props = {
   form: any;
@@ -23,20 +22,16 @@ function PaymentForm({ form, setLoad, setShowSpinner }: Props) {
   return (
     <form
       onSubmit={form.onSubmit(async (values: any) => {
-        if (values.id) {
-          const result: any = await useUpdateValues(
-            'payments',
-            {
-              status: values.number,
-              active: values.active,
-            },
-            form,
-            setShowSpinner,
-            setLoad
-          );
+        const { id, ...newValues } = values;
 
-          if (result) setError(result);
-        }
+        setShowSpinner(true);
+
+        const result: any = updateInDB('payments', id, newValues);
+        if (result) setError(result);
+
+        form.reset();
+        setLoad();
+        setShowSpinner(false);
       })}
       style={{
         display: 'grid',

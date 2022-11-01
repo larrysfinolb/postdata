@@ -1,10 +1,11 @@
-import { Button, LoadingOverlay, Table, TextInput, Title } from '@mantine/core';
+import { Button, Table, TextInput, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import AdminAuth from 'components/AdminAuth';
 import Container from 'components/Container';
 import ShoppingForm from 'components/Forms/ShoopingForm';
 import HeaderAdmin from 'components/HeaderAdmin';
 import Layout from 'components/Layout';
+import Loader from 'components/Loader';
 import Section from 'components/Section';
 import useData from 'hooks/useData';
 import React from 'react';
@@ -24,7 +25,6 @@ function ShoppingDashboard({}: Props) {
       active: false,
     },
     validate: {
-      id: (value) => (REGEX.id.test(value) ? null : 'Formato de id invalido.'),
       client: (value) =>
         REGEX.name.test(value) ? null : 'Formato de cliente invalido.',
       book: (value) =>
@@ -34,12 +34,8 @@ function ShoppingDashboard({}: Props) {
 
   return (
     <AdminAuth>
+      <Loader show={showSpinner} />
       <Layout title="Panel de compras" Header={<HeaderAdmin />}>
-        <LoadingOverlay
-          loaderProps={{ color: 'yellow' }}
-          visible={showSpinner}
-          overlayBlur={2}
-        />
         <Section>
           <Title
             order={1}
@@ -77,15 +73,14 @@ function ShoppingDashboard({}: Props) {
                 ))}
               </tbody>
             </Table>
-            <Button color="yellow" type="submit" uppercase>
-              Generar reporte
-            </Button>
           </Container>
-          <ShoppingForm
-            form={form}
-            setLoad={setLoad}
-            setShowSpinner={setShowSpinner}
-          />
+          <div>
+            <ShoppingForm
+              form={form}
+              setLoad={setLoad}
+              setShowSpinner={setShowSpinner}
+            />
+          </div>
         </Section>
       </Layout>
     </AdminAuth>

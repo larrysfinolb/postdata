@@ -11,8 +11,6 @@ import {
 } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
 import React from 'react';
-import useInsertValues from 'hooks/useInsertValues';
-import useUpdateValues from 'hooks/useUpdateValues';
 
 type Props = {
   authors: Array<any>;
@@ -23,12 +21,7 @@ type Props = {
 };
 
 function BookForm({ authors, genres, form, setLoad, setShowSpinner }: Props) {
-  
-
-
-  return (
-    
-  );
+  return null;
 }
 
 export default BookForm;

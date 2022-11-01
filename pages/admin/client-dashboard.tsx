@@ -19,7 +19,8 @@ import Container from 'components/Container';
 import { useForm } from '@mantine/form';
 import useData from 'hooks/useData';
 import REGEX from 'utils/regex';
-import useUpdateValues from 'hooks/useUpdateValues';
+import Loader from 'components/Loader';
+import { updateInDB } from 'utils/DB';
 
 type Props = {};
 
@@ -38,7 +39,6 @@ function ClientDashboard({}: Props) {
       active: false,
     },
     validate: {
-      id: (value) => (REGEX.id.test(value) ? null : 'Formato del ID invalido.'),
       email: (value) =>
         REGEX.email.test(value) ? null : 'Formato de correo invalido.',
       firstName: (value) =>
@@ -53,12 +53,8 @@ function ClientDashboard({}: Props) {
   return (
     <AdminAuth>
       <Layout title="Panel de clientes" Header={<HeaderAdmin />}>
+        <Loader show={showSpinner} />
         <Section>
-          <LoadingOverlay
-            loaderProps={{ color: 'yellow' }}
-            visible={showSpinner}
-            overlayBlur={2}
-          />
           <Title order={1} style={{ gridColumn: '1 / 3' }}>
             Panel de clientes
           </Title>
@@ -94,9 +90,6 @@ function ClientDashboard({}: Props) {
                 ))}
               </tbody>
             </Table>
-            <Button color="yellow" type="button" uppercase>
-              Generar reporte
-            </Button>
           </Container>
           <form
             style={{
@@ -107,21 +100,16 @@ function ClientDashboard({}: Props) {
               gap: '1rem',
             }}
             onSubmit={form.onSubmit(async (values: any) => {
-              if (values.id) {
-                const result: any = await useUpdateValues(
-                  'clients',
-                  {
-                    id: values.id,
-                    name: values.name,
-                    active: values.active,
-                  },
-                  form,
-                  setShowSpinner,
-                  setLoad
-                );
+              const { id, ...newValues } = values;
 
-                if (result) setError(result);
-              }
+              setShowSpinner(true);
+
+              const result: any = await updateInDB('clients', id, newValues);
+              if (result) setError(result);
+
+              form.reset();
+              setLoad(true);
+              setShowSpinner(false);
             })}
           >
             <TextInput

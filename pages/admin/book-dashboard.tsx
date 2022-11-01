@@ -5,7 +5,6 @@ import {
   Button,
   Table,
   Title,
-  LoadingOverlay,
   Alert,
   Checkbox,
   NumberInput,
@@ -22,6 +21,9 @@ import REGEX from 'utils/regex';
 import { DatePicker } from '@mantine/dates';
 import supabase from 'utils/supabase';
 import FileInput from 'components/FileInput';
+import Loader from 'components/Loader';
+import { getUrlFile, uploadFile } from 'utils/storage';
+import { deleteInDB, getLastInsert, insertInDB, updateInDB } from 'utils/DB';
 
 function ClientDashboard() {
   const [showSpinner, setShowSpinner] = React.useState(false);
@@ -71,12 +73,8 @@ function ClientDashboard() {
 
   return (
     <Layout title="Panel de Libros" Header={<HeaderAdmin />}>
+      <Loader show={showSpinner} />
       <Section>
-        <LoadingOverlay
-          loaderProps={{ color: 'yellow' }}
-          visible={showSpinner}
-          overlayBlur={2}
-        />
         <Title order={1} style={{ gridColumn: '1 / 3' }}>
           Panel de Libros
         </Title>
@@ -138,137 +136,109 @@ function ClientDashboard() {
               values;
 
             if (id) {
-              try {
-                setShowSpinner(true);
-                const { data: dataFile, error: errorFile }: any =
-                  await supabase.storage
-                    .from('covers')
-                    .upload(`${values.title}.png`, cover_file, {
-                      upsert: true,
-                    });
+              setShowSpinner(true);
 
-                if (errorFile) throw errorFile;
+              const resultCover: any = await uploadFile(
+                'covers',
+                newValues.title,
+                cover_file
+              );
+              if (resultCover.type === 'error') setError(resultCover.error);
 
-                const {
-                  data: { publicUrl },
-                } = await supabase.storage
-                  .from('covers')
-                  .getPublicUrl(dataFile.path);
+              newValues.cover_url = getUrlFile('covers', resultCover.data);
 
-                newValues.cover_url = publicUrl;
+              const resultBook: any = await updateInDB('books', id, [
+                newValues,
+              ]);
+              if (resultBook) setError(resultBook);
 
-                const { error } = await supabase
-                  .from('books')
-                  .update(newValues)
-                  .eq('id', id);
-                if (error) throw error;
+              await books_has_authors.map(async (item: any) => {
+                if (item.books_id === id) {
+                  const result: any = await deleteInDB(
+                    'books_has_authors',
+                    item.id
+                  );
+                  if (result) setError(result);
+                }
+              });
+              await books_has_genres.map(async (item: any) => {
+                if (item.books_id === id) {
+                  const result: any = await deleteInDB(
+                    'books_has_genres',
+                    item.id
+                  );
+                  if (result) setError(result);
+                }
+              });
 
-                books_has_authors.map(async (item: any) => {
-                  if (item.books_id === id) {
-                    const { error } = await supabase
-                      .from('books_has_authors')
-                      .delete()
-                      .eq('id', item.id);
+              const b_h_a = authors_id.map((item: any) => ({
+                books_id: id,
+                authors_id: item,
+              }));
+              const resultAuthors: any = await insertInDB(
+                'books_has_authors',
+                b_h_a
+              );
+              if (resultAuthors) setError(resultAuthors);
 
-                    if (error) throw error;
-                  }
-                });
-                books_has_genres.map(async (item: any) => {
-                  if (item.books_id === id) {
-                    const { error } = await supabase
-                      .from('books_has_genres')
-                      .delete()
-                      .eq('id', item.id);
+              const b_h_g = authors_id.map((item: any) => ({
+                books_id: id,
+                genres_id: item,
+              }));
+              const resultGenres: any = await insertInDB(
+                'books_has_genres',
+                b_h_g
+              );
+              if (resultGenres) setError(resultGenres);
 
-                    if (error) throw error;
-                  }
-                });
-
-                authors_id.map(async (item: any) => {
-                  console.log(item);
-                  const { error } = await supabase
-                    .from('books_has_authors')
-                    .insert([{ books_id: id, authors_id: item }]);
-
-                  if (error) throw error;
-                });
-
-                genres_id.map(async (item: any) => {
-                  const { error } = await supabase
-                    .from('books_has_genres')
-                    .insert([{ books_id: id, genres_id: item }]);
-
-                  if (error) throw error;
-                });
-
-                form.reset();
-                setLoadBooks(true);
-                setLoadBookHasAuthors(true);
-                setLoadBooksHasGenres(true);
-                setShowSpinner(false);
-              } catch (error) {
-                console.log(error);
-                setShowSpinner(false);
-              }
+              form.reset();
+              setLoadBooks(true);
+              setLoadBookHasAuthors(true);
+              setLoadBooksHasGenres(true);
+              setShowSpinner(false);
             } else {
-              try {
-                setShowSpinner(true);
-                const { data: dataFile, error: errorFile }: any =
-                  await supabase.storage
-                    .from('covers')
-                    .upload(`${values.title}.png`, cover_file, {
-                      upsert: true,
-                    });
+              setShowSpinner(true);
 
-                if (errorFile) throw errorFile;
+              const resultCover: any = await uploadFile(
+                'covers',
+                newValues.title,
+                cover_file
+              );
+              if (resultCover.type === 'error') setError(resultCover.error);
 
-                const {
-                  data: { publicUrl },
-                } = await supabase.storage
-                  .from('covers')
-                  .getPublicUrl(dataFile.path);
+              newValues.cover_url = getUrlFile('covers', resultCover.data);
 
-                newValues.cover_url = publicUrl;
+              const resultBooks: any = await insertInDB('books', [newValues]);
+              if (resultBooks) setError(resultBooks);
 
-                const { error: errorBook } = await supabase
-                  .from('books')
-                  .insert([newValues]);
+              const resultSelect: any = await getLastInsert('books');
+              if (resultSelect.type === 'error') setError(resultSelect.error);
 
-                if (errorBook) throw errorBook;
+              const b_h_a = authors_id.map((item: any) => ({
+                books_id: resultSelect.data.id,
+                authors_id: item,
+              }));
+              const resultAuthors: any = await insertInDB(
+                'books_has_authors',
+                b_h_a
+              );
+              if (resultAuthors) setError(resultAuthors);
 
-                const { data: dataIDs, error: errorIDs }: any = await supabase
-                  .from('books')
-                  .select('id');
+              const b_h_g = genres_id.map((item: any) => ({
+                books_id: resultSelect.data.id,
+                genres_id: item,
+              }));
+              const resultGenres: any = await insertInDB(
+                'books_has_genres',
+                b_h_g
+              );
+              if (resultGenres) setError(resultGenres);
 
-                if (errorIDs) throw errorIDs;
-
-                id = dataIDs[dataIDs.length - 1].id;
-
-                authors_id.map(async (item: any) => {
-                  const { error } = await supabase
-                    .from('books_has_authors')
-                    .insert([{ books_id: id, authors_id: item }]);
-
-                  if (error) throw error;
-                });
-
-                genres_id.map(async (item: any) => {
-                  const { error } = await supabase
-                    .from('books_has_genres')
-                    .insert([{ books_id: id, genres_id: item }]);
-
-                  if (error) throw error;
-                });
-
-                form.reset();
-                setLoadBooks(true);
-                setLoadBookHasAuthors(true);
-                setLoadBooksHasGenres(true);
-                setShowSpinner(false);
-              } catch (error) {
-                console.log(error);
-                setShowSpinner(false);
-              }
+              form.reset();
+              setLoadBooks(true);
+              setLoadBookHasAuthors(true);
+              setLoadBooksHasGenres(true);
+              setShowSpinner(false);
             }
           })}
         >

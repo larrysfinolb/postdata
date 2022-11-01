@@ -1,10 +1,11 @@
-import { Button, LoadingOverlay, Table, TextInput, Title } from '@mantine/core';
+import { Button, Table, TextInput, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import AdminAuth from 'components/AdminAuth';
 import Container from 'components/Container';
 import PaymentForm from 'components/Forms/PaymentForm';
 import HeaderAdmin from 'components/HeaderAdmin';
 import Layout from 'components/Layout';
+import Loader from 'components/Loader';
 import Section from 'components/Section';
 import useData from 'hooks/useData';
 import React from 'react';
@@ -25,7 +26,6 @@ function PaymentDashboard() {
     },
 
     validate: {
-      id: (value) => (REGEX.id.test(value) ? null : 'Formato del id invalido.'),
       amount: (value) =>
         REGEX.price.test(value) ? null : 'Formato del monto invalido.',
       client: (value) =>
@@ -38,13 +38,9 @@ function PaymentDashboard() {
 
   return (
     <AdminAuth>
+      <Loader show={showSpinner} />
       <Layout title="Panal de pagos" Header={<HeaderAdmin />}>
         <Section>
-          <LoadingOverlay
-            loaderProps={{ color: 'yellow' }}
-            visible={showSpinner}
-            overlayBlur={2}
-          />
           <Title order={1} style={{ gridColumn: '1 / 3' }}>
             Panel de pagos
           </Title>
@@ -80,15 +76,14 @@ function PaymentDashboard() {
                 ))}
               </tbody>
             </Table>
-            <Button color="yellow" type="button" uppercase>
-              Generar reporte
-            </Button>
           </Container>
-          <PaymentForm
-            form={form}
-            setLoad={setLoad}
-            setShowSpinner={setShowSpinner}
-          />
+          <div>
+            <PaymentForm
+              form={form}
+              setLoad={setLoad}
+              setShowSpinner={setShowSpinner}
+            />
+          </div>
         </Section>
       </Layout>
     </AdminAuth>

@@ -1,10 +1,11 @@
-import { Button, LoadingOverlay, Table, TextInput, Title } from '@mantine/core';
+import { Table, TextInput, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import AdminAuth from 'components/AdminAuth';
 import Container from 'components/Container';
 import AuthorForm from 'components/Forms/AuthorForm';
 import HeaderAdmin from 'components/HeaderAdmin';
 import Layout from 'components/Layout';
+import Loader from 'components/Loader';
 import Section from 'components/Section';
 import useData from 'hooks/useData';
 import React from 'react';
@@ -12,6 +13,7 @@ import REGEX from 'utils/regex';
 
 function AuthorDashboard() {
   const [showSpinner, setShowSpinner] = React.useState(false);
+
   const { data: authors, setLoad } = useData('authors', setShowSpinner);
 
   const form = useForm({
@@ -21,7 +23,6 @@ function AuthorDashboard() {
       active: false,
     },
     validate: {
-      id: (value) => (REGEX.id.test(value) ? null : 'Formato de ID invalido.'),
       name: (value) =>
         REGEX.name.test(value) ? null : 'Formato de nombre invalido.',
     },
@@ -30,12 +31,8 @@ function AuthorDashboard() {
   return (
     <AdminAuth>
       <Layout title="Panel de clientes" Header={<HeaderAdmin />}>
+        <Loader show={showSpinner} />
         <Section>
-          <LoadingOverlay
-            loaderProps={{ color: 'yellow' }}
-            visible={showSpinner}
-            overlayBlur={2}
-          />
           <Title order={1} style={{ gridColumn: '1 / 3' }}>
             Panel de Autores
           </Title>
@@ -68,15 +65,14 @@ function AuthorDashboard() {
                 ))}
               </tbody>
             </Table>
-            <Button color="yellow" type="button" uppercase>
-              Generar reporte
-            </Button>
           </Container>
-          <AuthorForm
-            form={form}
-            setLoad={setLoad}
-            setShowSpinner={setShowSpinner}
-          />
+          <div>
+            <AuthorForm
+              form={form}
+              setLoad={setLoad}
+              setShowSpinner={setShowSpinner}
+            />
+          </div>
         </Section>
       </Layout>
     </AdminAuth>

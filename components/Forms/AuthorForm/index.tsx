@@ -1,7 +1,6 @@
 import { Alert, Button, Checkbox, TextInput } from '@mantine/core';
-import useInsertValues from 'hooks/useInsertValues';
-import useUpdateValues from 'hooks/useUpdateValues';
 import React from 'react';
+import { insertInDB, updateInDB } from 'utils/db';
 
 type Props = {
   form: any;
@@ -21,34 +20,21 @@ function AuthorForm({ form, setLoad, setShowSpinner }: Props) {
         gap: '1rem',
       }}
       onSubmit={form.onSubmit(async (values: any) => {
-        if (values.id) {
-          const result: any = await useUpdateValues(
-            'authors',
-            {
-              id: values.id,
-              name: values.name,
-              active: values.active,
-            },
-            form,
-            setShowSpinner,
-            setLoad
-          );
+        const { id, ...newValues } = values;
 
+        setShowSpinner(true);
+
+        if (id) {
+          const result: any = await updateInDB('authors', id, newValues);
           if (result) setError(result);
         } else {
-          const result: any = await useInsertValues(
-            'authors',
-            {
-              name: values.name,
-              active: values.active,
-            },
-            form,
-            setShowSpinner,
-            setLoad
-          );
-
+          const result: any = await insertInDB('authors', [newValues]);
           if (result) setError(result);
         }
+
+        setLoad(true);
+        form.reset();
+        setShowSpinner(false);
       })}
     >
       <TextInput
