@@ -1,33 +1,36 @@
-import { Button, Checkbox, TextInput } from '@mantine/core';
+import { Alert, Button, Checkbox, TextInput } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
-import { useForm } from '@mantine/form';
 import React from 'react';
-import REGEX from 'utils/regex';
+import useUpdateValues from 'hooks/useUpdateValues';
 
-type Props = {};
+type Props = {
+  form: any;
+  setLoad: Function;
+  setShowSpinner: Function;
+};
 
-function ShoppingForm() {
-  const form = useForm({
-    initialValues: {
-      id: '',
-      client: '',
-      book: '',
-      active: 'false',
-    },
-    validate: {
-      id: (value) => (REGEX.id.test(value) ? null : 'Formato de id invalido.'),
-      client: (value) =>
-        REGEX.name.test(value) ? null : 'Formato de cliente invalido.',
-      book: (value) =>
-        REGEX.title.test(value) ? null : 'Formato de libro invalido.',
-      active: (value) =>
-        REGEX.active.test(value) ? null : 'Formato de estado invalido.',
-    },
-  });
+function ShoppingForm({ form, setLoad, setShowSpinner }: Props) {
+  const [error, setError] = React.useState('');
 
   return (
     <form
-      onSubmit={form.onSubmit((values) => {})}
+      onSubmit={form.onSubmit(async (values: any) => {
+        if (values.id) {
+          const result: any = await useUpdateValues(
+            'authors',
+            {
+              id: values.id,
+              name: values.name,
+              active: values.active,
+            },
+            form,
+            setShowSpinner,
+            setLoad
+          );
+
+          if (result) setError(result);
+        }
+      })}
       style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
@@ -59,24 +62,35 @@ function ShoppingForm() {
         style={{ gridArea: 'book' }}
         {...form.getInputProps('book')}
       />
-      <Checkbox color="yellow" label="Active" style={{ gridArea: 'active' }} />
-      <DatePicker
-        label="Fecha de creación"
-        placeholder="No debes de llenar este campo."
-        disabled
-        style={{ gridArea: 'created' }}
+      <Checkbox
+        color="yellow"
+        label="Active"
+        style={{ gridArea: 'active' }}
+        {...form.getInputProps('active', { type: 'checkbox' })}
       />
-      <Button color="yellow" type="submit" style={{ gridArea: 'submit' }}>
+      <Button
+        color="yellow"
+        type="submit"
+        uppercase
+        style={{ gridArea: 'submit' }}
+      >
         Confirmar
       </Button>
       <Button
         color="green"
         variant="outline"
         type="button"
+        uppercase
         style={{ gridArea: 'reset' }}
+        onClick={() => form.reset()}
       >
         Limpiar
       </Button>
+      {error && (
+        <Alert title="¡Error!" color="red" style={{ gridColumn: '1 / 3' }}>
+          {error}
+        </Alert>
+      )}
     </form>
   );
 }

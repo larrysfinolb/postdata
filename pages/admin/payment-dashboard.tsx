@@ -1,4 +1,5 @@
-import { Button, Table, TextInput, Title } from '@mantine/core';
+import { Button, LoadingOverlay, Table, TextInput, Title } from '@mantine/core';
+import { useForm } from '@mantine/form';
 import AdminAuth from 'components/AdminAuth';
 import Container from 'components/Container';
 import PaymentForm from 'components/Forms/PaymentForm';
@@ -7,20 +8,49 @@ import Layout from 'components/Layout';
 import Section from 'components/Section';
 import useData from 'hooks/useData';
 import React from 'react';
+import REGEX from 'utils/regex';
 
 function PaymentDashboard() {
-  const payments = useData('payments');
+  const [showSpinner, setShowSpinner] = React.useState(false);
+  const { data: payments, setLoad } = useData('payments', setShowSpinner);
+
+  const form = useForm({
+    initialValues: {
+      id: '',
+      amount: '',
+      client: '',
+      bank: '',
+      voucher: '',
+      active: false,
+    },
+
+    validate: {
+      id: (value) => (REGEX.id.test(value) ? null : 'Formato del id invalido.'),
+      amount: (value) =>
+        REGEX.price.test(value) ? null : 'Formato del monto invalido.',
+      client: (value) =>
+        REGEX.name.test(value) ? null : 'Formato del cliente invalido.',
+      bank: (value) =>
+        REGEX.name.test(value) ? null : 'Formato del banco invalido.',
+      voucher: (value) => (value ? null : 'Selecciona el comprobante de pago'),
+    },
+  });
 
   return (
     <AdminAuth>
       <Layout title="Panal de pagos" Header={<HeaderAdmin />}>
         <Section>
+          <LoadingOverlay
+            loaderProps={{ color: 'yellow' }}
+            visible={showSpinner}
+            overlayBlur={2}
+          />
           <Title order={1} style={{ gridColumn: '1 / 3' }}>
             Panel de pagos
           </Title>
           <Container>
             <TextInput label="Buscador" placeholder="1" />
-            <Table>
+            <Table highlightOnHover>
               <thead>
                 <tr>
                   <th>ID</th>
@@ -30,19 +60,35 @@ function PaymentDashboard() {
               </thead>
               <tbody>
                 {payments.map((item: any) => (
-                  <tr>
+                  <tr
+                    key={item.id}
+                    onClick={() =>
+                      form.setValues({
+                        id: item.id,
+                        amount: item.amount,
+                        client: item.clinets_id,
+                        bank: item.banks_id,
+                        voucher: item.voucher_url,
+                        active: item.active,
+                      })
+                    }
+                  >
                     <td>{item.id}</td>
-                    <td>client</td>
+                    <td>{item.clients_id}</td>
                     <td>{item.active}</td>
                   </tr>
                 ))}
               </tbody>
             </Table>
-            <Button color="yellow" type="button">
+            <Button color="yellow" type="button" uppercase>
               Generar reporte
             </Button>
           </Container>
-          <PaymentForm />
+          <PaymentForm
+            form={form}
+            setLoad={setLoad}
+            setShowSpinner={setShowSpinner}
+          />
         </Section>
       </Layout>
     </AdminAuth>

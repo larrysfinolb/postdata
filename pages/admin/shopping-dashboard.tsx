@@ -1,4 +1,5 @@
-import { Button, Table, TextInput, Title } from '@mantine/core';
+import { Button, LoadingOverlay, Table, TextInput, Title } from '@mantine/core';
+import { useForm } from '@mantine/form';
 import AdminAuth from 'components/AdminAuth';
 import Container from 'components/Container';
 import ShoppingForm from 'components/Forms/ShoopingForm';
@@ -7,15 +8,38 @@ import Layout from 'components/Layout';
 import Section from 'components/Section';
 import useData from 'hooks/useData';
 import React from 'react';
+import REGEX from 'utils/regex';
 
 type Props = {};
 
 function ShoppingDashboard({}: Props) {
-  const shopping = useData('shopping');
+  const [showSpinner, setShowSpinner] = React.useState(false);
+  const { data: shoppings, setLoad } = useData('shoppings', setShowSpinner);
+
+  const form = useForm({
+    initialValues: {
+      id: '',
+      client: '',
+      book: '',
+      active: false,
+    },
+    validate: {
+      id: (value) => (REGEX.id.test(value) ? null : 'Formato de id invalido.'),
+      client: (value) =>
+        REGEX.name.test(value) ? null : 'Formato de cliente invalido.',
+      book: (value) =>
+        REGEX.title.test(value) ? null : 'Formato de libro invalido.',
+    },
+  });
 
   return (
     <AdminAuth>
       <Layout title="Panel de compras" Header={<HeaderAdmin />}>
+        <LoadingOverlay
+          loaderProps={{ color: 'yellow' }}
+          visible={showSpinner}
+          overlayBlur={2}
+        />
         <Section>
           <Title
             order={1}
@@ -26,7 +50,7 @@ function ShoppingDashboard({}: Props) {
           </Title>
           <Container>
             <TextInput label="Buscador" placeholder="imperio" />
-            <Table>
+            <Table highlightOnHover>
               <thead>
                 <tr>
                   <th>ID</th>
@@ -35,8 +59,17 @@ function ShoppingDashboard({}: Props) {
                 </tr>
               </thead>
               <tbody>
-                {shopping.map((item: any) => (
-                  <tr key={item.id}>
+                {shoppings.map((item: any) => (
+                  <tr
+                    key={item.id}
+                    onClick={() =>
+                      form.setValues({
+                        id: item.id,
+                        client: item.clients_id,
+                        book: item.books_id,
+                      })
+                    }
+                  >
                     <td>{item.id}</td>
                     <td>{item.client}</td>
                     <td>{item.book}</td>
@@ -44,11 +77,15 @@ function ShoppingDashboard({}: Props) {
                 ))}
               </tbody>
             </Table>
-            <Button color="yellow" type="submit">
+            <Button color="yellow" type="submit" uppercase>
               Generar reporte
             </Button>
           </Container>
-          <ShoppingForm />
+          <ShoppingForm
+            form={form}
+            setLoad={setLoad}
+            setShowSpinner={setShowSpinner}
+          />
         </Section>
       </Layout>
     </AdminAuth>

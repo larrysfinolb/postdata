@@ -1,30 +1,40 @@
 import React from 'react';
 import supabase from 'utils/supabase';
 
-function useData(table: string) {
+function useData(table: string, setShowSpinner: Function) {
   const [data, setData] = React.useState([]);
+  const [load, setLoad] = React.useState(true);
 
   React.useEffect(() => {
-    const getData = async () => {
-      try {
-        type Result = {
-          data: any;
-          error: any;
-        };
+    if (load) {
+      const getData = async () => {
+        try {
+          type Result = {
+            data: any;
+            error: any;
+          };
 
-        const { data, error }: Result = await supabase.from(table).select('*');
-        if (error) throw error;
+          setShowSpinner(true);
+          const { data, error }: Result = await supabase
+            .from(table)
+            .select('*');
+          if (error) throw error;
 
-        setData(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+          setData(data);
+          setLoad(false);
+          setShowSpinner(false);
+        } catch (error) {
+          console.error(error);
+          setShowSpinner(false);
+          return [];
+        }
+      };
 
-    getData();
-  }, []);
+      getData();
+    }
+  }, [load]);
 
-  return data;
+  return { data, setLoad };
 }
 
 export default useData;

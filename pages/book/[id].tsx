@@ -1,5 +1,13 @@
 import React from 'react';
-import { Grid, MantineTheme, Image, LoadingOverlay, Text, useMantineTheme, Button } from '@mantine/core';
+import {
+  Grid,
+  MantineTheme,
+  Image,
+  LoadingOverlay,
+  Text,
+  useMantineTheme,
+  Button,
+} from '@mantine/core';
 import Layout from 'components/Layout';
 import Header from 'components/HeaderUser';
 import Heading from 'components/Heading';
@@ -10,7 +18,8 @@ const data = [
   {
     title: 'The Final Empire',
     author: 'Brandon Sanderson',
-    coverUrl: 'https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1617768316l/68428._SY475_.jpg',
+    coverUrl:
+      'https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1617768316l/68428._SY475_.jpg',
     sinopsis: `For a thousand years the ash fell and no flowers bloomed. For a thousand years the Skaa slaved in
     misery and lived in fear. For a thousand years the Lord Ruler, the "Sliver of Infinity," reigned
     with absolute power and ultimate terror, divinely invincible. Then, when hope was so long lost that
@@ -73,7 +82,7 @@ function Book() {
   };
 
   return (
-    <Layout title='Detalles del libro' Header={<Header />}>
+    <Layout title="Detalles del libro" Header={<Header />}>
       {book.length === 0 ? (
         <LoadingOverlay visible={true} overlayBlur={2} />
       ) : (
@@ -81,12 +90,17 @@ function Book() {
           <Grid.Col span={5}>
             <div style={{ ...stylesContainer, alignItems: 'center' }}>
               <div style={stylesImage}>
-                <Image src={`${book[0].coverUrl}`} alt={`Portada del libro ${book[0].title}`} />
+                <Image
+                  src={`${book[0].coverUrl}`}
+                  alt={`Portada del libro ${book[0].title}`}
+                />
               </div>
 
               <Text style={stylesPrice}>{`${book[0].price} BC`}</Text>
 
-              <Button size='xl'>Comprar</Button>
+              <Button color="yellow" type="button">
+                Comprar
+              </Button>
             </div>
           </Grid.Col>
           <Grid.Col span={6} offset={1}>
@@ -101,7 +115,7 @@ function Book() {
               </div>
 
               <article style={stylesContainer}>
-                <Heading order={2} size='h3'>
+                <Heading order={2} size="h3">
                   {book[0].title}
                 </Heading>
                 <Paragraph>{book[0].sinopsis}</Paragraph>

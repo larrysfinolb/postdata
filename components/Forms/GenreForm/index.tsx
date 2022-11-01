@@ -1,37 +1,55 @@
-import { Button, Checkbox, TextInput } from '@mantine/core';
-import { DatePicker } from '@mantine/dates';
-import { useForm } from '@mantine/form';
+import { Alert, Button, Checkbox, TextInput } from '@mantine/core';
 import React from 'react';
-import REGEX from 'utils/regex';
+import useInsertValues from 'hooks/useInsertValues';
+import useUpdateValues from 'hooks/useUpdateValues';
 
-function GenreForm() {
-  const form = useForm({
-    initialValues: {
-      id: '',
-      name: '',
-      active: 'false',
-    },
-    validate: {
-      id: (value) => (REGEX.id.test(value) ? null : 'Formato de ID invalido.'),
-      name: (value) =>
-        REGEX.fullname.test(value)
-          ? null
-          : 'Formato de nombre completo invalido.',
-      active: (value) =>
-        REGEX.active.test(value) ? null : 'Formato de estado invalido.',
-    },
-  });
+type Props = {
+  form: any;
+  setLoad: Function;
+  setShowSpinner: Function;
+};
+
+function GenreForm({ form, setLoad, setShowSpinner }: Props) {
+  const [error, setError] = React.useState('');
 
   return (
     <form
       style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
-        gridTemplateAreas:
-          '"id id" "name name" "active active" "created created" "submit delete"',
+        gridTemplateAreas: '"id id" "name name" "active active" "submit reset"',
         gap: '1rem',
       }}
-      onSubmit={form.onSubmit((values) => {})}
+      onSubmit={form.onSubmit(async (values: any) => {
+        if (values.id) {
+          const result: any = await useUpdateValues(
+            'genres',
+            {
+              id: values.id,
+              name: values.name,
+              active: values.active,
+            },
+            form,
+            setShowSpinner,
+            setLoad
+          );
+
+          if (result) setError(result);
+        } else {
+          const result: any = await useInsertValues(
+            'genres',
+            {
+              name: values.name,
+              active: values.active,
+            },
+            form,
+            setShowSpinner,
+            setLoad
+          );
+
+          if (result) setError(result);
+        }
+      })}
     >
       <TextInput
         label="ID"
@@ -50,13 +68,7 @@ function GenreForm() {
       <Checkbox
         color="yellow"
         label="Activo"
-        {...form.getInputProps('active')}
-      />
-      <DatePicker
-        label="Fecha de creación"
-        placeholder="No debes de llenar este campo."
-        disabled
-        style={{ gridArea: 'created' }}
+        {...form.getInputProps('active', { type: 'checkbox' })}
       />
       <Button
         color="yellow"
@@ -64,17 +76,23 @@ function GenreForm() {
         uppercase
         style={{ gridArea: 'submit' }}
       >
-        Continuar
+        Confirmar
       </Button>
       <Button
         color="green"
         variant="outline"
         type="button"
         uppercase
-        style={{ gridArea: 'delete' }}
+        style={{ gridArea: 'reset' }}
+        onClick={() => form.reset()}
       >
-        Eliminar
+        Limpiar
       </Button>
+      {error && (
+        <Alert title="¡Error!" color="red" style={{ gridColumn: '1 / 3' }}>
+          {error}
+        </Alert>
+      )}
     </form>
   );
 }
