@@ -23,7 +23,7 @@ import supabase from 'utils/supabase';
 import FileInput from 'components/FileInput';
 import Loader from 'components/Loader';
 import { getUrlFile, uploadFile } from 'utils/storage';
-import { deleteInDB, getLastInsert, insertInDB, updateInDB } from 'utils/DB';
+import { deleteInDB, getLastInsert, insertInDB, updateInDB } from 'utils/db';
 
 function ClientDashboard() {
   const [showSpinner, setShowSpinner] = React.useState(false);

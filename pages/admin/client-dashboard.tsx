@@ -20,7 +20,7 @@ import { useForm } from '@mantine/form';
 import useData from 'hooks/useData';
 import REGEX from 'utils/regex';
 import Loader from 'components/Loader';
-import { updateInDB } from 'utils/DB';
+import { updateInDB } from 'utils/db';
 
 type Props = {};
 
