@@ -15,20 +15,27 @@ import Link from 'next/link';
 import { termsAndConditions } from 'utils/termsAndConditions';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
+import supabase from 'utils/supabase';
+import { useRouter } from 'next/router';
 
 type Props = {};
 
 function Index({}: Props) {
   const theme: MantineTheme = useMantineTheme();
 
+  const router = useRouter();
+
   const form = useForm({
     initialValues: {
       email: '',
+      password: '',
     },
 
     validate: {
       email: (value) =>
-        /^[a-zA-Z0-9\-\*]{1,64}@[a-zA-Z0-9\-\.]{1,255}$/.test(value) ? null : 'Formato de correo invalido.',
+        /^[a-zA-Z0-9\-\*]{1,64}@[a-zA-Z0-9\-\.]{1,255}$/.test(value)
+          ? null
+          : 'Formato de correo invalido.',
     },
   });
   const textInputStyles = {
@@ -53,7 +60,18 @@ function Index({}: Props) {
   };
   return (
     <form
-      onSubmit={form.onSubmit((values) => console.log(values))}
+      onSubmit={form.onSubmit(async (values) => {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
+        });
+
+        if (!error) {
+          router.push('/');
+        } else {
+          alert('Hubo un error: ' + error);
+        }
+      })}
       style={{
         display: 'grid',
         width: '100%',
@@ -87,14 +105,34 @@ function Index({}: Props) {
         styles={passInputStyles}
       />
 
-      <div style={{ gridArea: 'register', width: '100%', height: '100%', display: 'grid', placeContent: 'center' }}>
-        <Link href={'#'}>
-          <a style={{ textAlign: 'center', textDecoration: 'none', color: theme.colors.customGreen[0] }}>
-            ¿Ya tienes una cuenta?
+      <div
+        style={{
+          gridArea: 'register',
+          width: '100%',
+          height: '100%',
+          display: 'grid',
+          placeContent: 'center',
+        }}
+      >
+        <Link href={'/signup'}>
+          <a
+            style={{
+              textAlign: 'center',
+              textDecoration: 'none',
+              color: theme.colors.customGreen[0],
+            }}
+          >
+            ¿No tienes una cuenta?
           </a>
         </Link>
       </div>
-      <Button type="submit" style={{ gridArea: 'submit', backgroundColor: theme.colors.customYellow[0] }}>
+      <Button
+        type="submit"
+        style={{
+          gridArea: 'submit',
+          backgroundColor: theme.colors.customYellow[0],
+        }}
+      >
         {'Iniciar sesión'}
       </Button>
     </form>

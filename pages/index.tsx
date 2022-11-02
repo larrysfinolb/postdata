@@ -7,6 +7,8 @@ import { Divider, Text, Group } from '@mantine/core';
 import colors from 'utils/colors';
 import Link from 'next/link';
 import BookPreview from 'components/BookPreview';
+import supabase from 'utils/supabase';
+import React from 'react';
 
 const genres = [
   'Fantasía',
@@ -60,42 +62,53 @@ const StyledGenresText = styled.a`
   }
 `;
 
-const Home: NextPage = () => (
-  <Layout title="home" Header={<Header />}>
-    <Heading order={1} styles={{ textAlign: 'center' }}>
-      Librería Postdata
-    </Heading>
-    <StyledContainer>
-      <Divider size="sm" />
-      <Text align="center" weight="bold" color="dark" size={18} mt={35}>
-        E-commerce de la librería <ColoredText>Postdata</ColoredText>, compra
-        tus libros favoritos de forma <ColoredText>online</ColoredText> y pasa
-        por nuestra librería a recibirlos.
-      </Text>
-      <StyledSubTitle primary>Géneros destacados</StyledSubTitle>
-      <Divider size="sm" />
-    </StyledContainer>
-    <Group>
-      {genres.map((genre) => (
-        <Link key={genre} href={`/books/${genre}`}>
-          <StyledGenresText>{genre}</StyledGenresText>
-        </Link>
-      ))}
-    </Group>
-    {genres
-      .filter((genre, idx) => idx < 3)
-      .map((genre) => (
-        <section key={genre}>
-          <StyledSubTitle>Libros destacados de {genre}</StyledSubTitle>
-          <Divider size="sm" />
-          {books
-            .filter((book, idx) => idx < 3)
-            .map((book) => (
-              <BookPreview key={book.id} {...book} />
-            ))}
-        </section>
-      ))}
-  </Layout>
-);
+const fetchSession = async () => {
+  const { data, error } = await supabase.auth.getSession();
+
+  console.log(data, error);
+};
+
+const Home: NextPage = () => {
+  React.useEffect(() => {
+    fetchSession();
+  }, []);
+  return (
+    <Layout title="home" Header={<Header />}>
+      <Heading order={1} styles={{ textAlign: 'center' }}>
+        Librería Postdata
+      </Heading>
+      <StyledContainer>
+        <Divider size="sm" />
+        <Text align="center" weight="bold" color="dark" size={18} mt={35}>
+          E-commerce de la librería <ColoredText>Postdata</ColoredText>, compra
+          tus libros favoritos de forma <ColoredText>online</ColoredText> y pasa
+          por nuestra librería a recibirlos.
+        </Text>
+        <StyledSubTitle primary>Géneros destacados</StyledSubTitle>
+        <Divider size="sm" />
+      </StyledContainer>
+      <Group>
+        {genres.map((genre) => (
+          <Link key={genre} href={`/books/${genre}`}>
+            <StyledGenresText>{genre}</StyledGenresText>
+          </Link>
+        ))}
+      </Group>
+      {genres
+        .filter((genre, idx) => idx < 3)
+        .map((genre) => (
+          <section key={genre}>
+            <StyledSubTitle>Libros destacados de {genre}</StyledSubTitle>
+            <Divider size="sm" />
+            {books
+              .filter((book, idx) => idx < 3)
+              .map((book) => (
+                <BookPreview key={book.id} {...book} />
+              ))}
+          </section>
+        ))}
+    </Layout>
+  );
+};
 
 export default Home;
