@@ -50,9 +50,9 @@ const updateInDB = async (table: string, id: number, values: Object) => {
   }
 };
 
-const deleteInDB = async (table: string, id: number) => {
+const deleteInDB = async (table: string, column: string, id: number) => {
   try {
-    const result = await supabase.from(table).delete().eq('id', id);
+    const result = await supabase.from(table).delete().eq(column, id);
 
     if (result.error) throw result.error.details;
 

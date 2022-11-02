@@ -51,38 +51,31 @@ function BookForm({ data, setLoad, form, setShowSpinner }: Props) {
           const resultBook: any = await updateInDB('books', id, [newValues]);
           if (resultBook) setError(resultBook);
 
-          await data.books_has_authors.map(async (item: any) => {
-            if (item.books_id === id) {
-              const result: any = await deleteInDB(
-                'books_has_authors',
-                item.id
-              );
-              if (result) setError(result);
-            }
-          });
-          await data.books_has_genres.map(async (item: any) => {
-            if (item.books_id === id) {
-              const result: any = await deleteInDB('books_has_genres', item.id);
-              if (result) setError(result);
-            }
-          });
-
-          const b_h_a = authors_id.map((item: any) => ({
-            books_id: id,
-            authors_id: item,
-          }));
-          const resultAuthors: any = await insertInDB(
+          const resultDeleteAuthors: any = await deleteInDB(
             'books_has_authors',
-            b_h_a
+            'books_id',
+            id
           );
-          if (resultAuthors) setError(resultAuthors);
+          if (resultDeleteAuthors) setError(resultDeleteAuthors);
+          await authors_id.map(async (item: any) => {
+            const result: any = await insertInDB('books_has_authors', [
+              { books_id: id, authors_id: item },
+            ]);
+            if (result) setError(result);
+          });
 
-          const b_h_g = genres_id.map((item: any) => ({
-            books_id: id,
-            genres_id: item,
-          }));
-          const resultGenres: any = await insertInDB('books_has_genres', b_h_g);
-          if (resultGenres) setError(resultGenres);
+          const resultDeleteGenres: any = await deleteInDB(
+            'books_has_genres',
+            'books_id',
+            id
+          );
+          if (resultDeleteGenres) setError(resultDeleteGenres);
+          await genres_id.map(async (item: any) => {
+            const result: any = await insertInDB('books_has_genres', [
+              { books_id: id, genres_id: item },
+            ]);
+            if (result) setError(result);
+          });
 
           form.reset();
           setLoad(true);
@@ -241,7 +234,7 @@ function BookForm({ data, setLoad, form, setShowSpinner }: Props) {
       >
         Limpiar
       </Button>
-      {error && (
+      {false && (
         <Alert title="¡Error!" color="red" style={{ gridColumn: '1 / 3' }}>
           {error}
         </Alert>
