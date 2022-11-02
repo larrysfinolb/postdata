@@ -1,4 +1,4 @@
-import { Button, Table, TextInput, Title } from '@mantine/core';
+import { Table, TextInput, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import AdminAuth from 'components/AdminAuth';
 import Container from 'components/Container';
@@ -7,13 +7,35 @@ import HeaderAdmin from 'components/HeaderAdmin';
 import Layout from 'components/Layout';
 import Loader from 'components/Loader';
 import Section from 'components/Section';
-import useData from 'hooks/useData';
+import useSearcher from 'hooks/useSearcher';
 import React from 'react';
+import { getAll } from 'utils/db';
 import REGEX from 'utils/regex';
 
 function PaymentDashboard() {
+  const [load, setLoad] = React.useState(true);
   const [showSpinner, setShowSpinner] = React.useState(false);
-  const { data: payments, setLoad } = useData('payments', setShowSpinner);
+  const [data, setData] = React.useState([]);
+
+  const { result, setSearch } = useSearcher(data, [
+    'id',
+    'clients_id',
+    'active',
+  ]);
+
+  React.useEffect(() => {
+    if (load) {
+      const getData = async () => {
+        setShowSpinner(true);
+        const result: any = getAll('payments');
+        if (result.data) setData(result.data);
+        setLoad(false);
+        setShowSpinner(false);
+      };
+
+      getData();
+    }
+  }, [load]);
 
   const form = useForm({
     initialValues: {
@@ -45,7 +67,11 @@ function PaymentDashboard() {
             Panel de pagos
           </Title>
           <Container>
-            <TextInput label="Buscador" placeholder="1" />
+            <TextInput
+              label="Buscador"
+              placeholder="1"
+              onChange={(value) => setSearch(value.target.value)}
+            />
             <Table highlightOnHover>
               <thead>
                 <tr>
@@ -55,7 +81,7 @@ function PaymentDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {payments.map((item: any) => (
+                {result.map((item: any) => (
                   <tr
                     key={item.id}
                     onClick={() =>
@@ -71,7 +97,7 @@ function PaymentDashboard() {
                   >
                     <td>{item.id}</td>
                     <td>{item.clients_id}</td>
-                    <td>{item.active}</td>
+                    <td>{item.active ? 'Activado' : 'Desactivado'}</td>
                   </tr>
                 ))}
               </tbody>

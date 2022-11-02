@@ -11,23 +11,39 @@ import {
   Checkbox,
   NumberInput,
   Alert,
-  LoadingOverlay,
 } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
 import AdminAuth from 'components/AdminAuth';
 import Container from 'components/Container';
 import { useForm } from '@mantine/form';
-import useData from 'hooks/useData';
 import REGEX from 'utils/regex';
 import Loader from 'components/Loader';
-import { updateInDB } from 'utils/db';
+import { getAll, updateInDB } from 'utils/db';
+import useSearcher from 'hooks/useSearcher';
 
 type Props = {};
 
 function ClientDashboard({}: Props) {
+  const [load, setLoad] = React.useState(true);
   const [showSpinner, setShowSpinner] = React.useState(false);
-  const { data: clients, setLoad } = useData('clients', setShowSpinner);
+  const [data, setData] = React.useState([]);
   const [error, setError] = React.useState('');
+
+  const { result, setSearch } = useSearcher(data, ['id', 'name', 'email']);
+
+  React.useEffect(() => {
+    if (load) {
+      const getData = async () => {
+        setShowSpinner(true);
+        const result: any = getAll('clients');
+        if (result.data) setData(result.data);
+        setLoad(false);
+        setShowSpinner(false);
+      };
+
+      getData();
+    }
+  }, [load]);
 
   const form = useForm({
     initialValues: {
@@ -59,7 +75,12 @@ function ClientDashboard({}: Props) {
             Panel de clientes
           </Title>
           <Container>
-            <TextInput color="yellow" placeholder="imperio" label="Buscador" />
+            <TextInput
+              color="yellow"
+              placeholder="imperio"
+              label="Buscador"
+              onChange={(value) => setSearch(value.target.value)}
+            />
             <Table>
               <thead>
                 <tr>
@@ -69,7 +90,7 @@ function ClientDashboard({}: Props) {
                 </tr>
               </thead>
               <tbody>
-                {clients.map((item: any) => (
+                {result.map((item: any) => (
                   <tr
                     key={item.id}
                     onClick={() =>

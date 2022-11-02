@@ -1,4 +1,4 @@
-import { Button, Table, TextInput, Title } from '@mantine/core';
+import { Table, TextInput, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import AdminAuth from 'components/AdminAuth';
 import Container from 'components/Container';
@@ -7,13 +7,31 @@ import HeaderAdmin from 'components/HeaderAdmin';
 import Layout from 'components/Layout';
 import Loader from 'components/Loader';
 import Section from 'components/Section';
-import useData from 'hooks/useData';
+import useSearcher from 'hooks/useSearcher';
 import React from 'react';
+import { getAll } from 'utils/db';
 import REGEX from 'utils/regex';
 
 function GenreDashboard() {
+  const [load, setLoad] = React.useState(true);
   const [showSpinner, setShowSpinner] = React.useState(false);
-  const { data: genres, setLoad } = useData('genres', setShowSpinner);
+  const [data, setData] = React.useState([]);
+
+  const { result, setSearch } = useSearcher(data, ['id', 'name', 'active']);
+
+  React.useEffect(() => {
+    if (load) {
+      const getData = async () => {
+        setShowSpinner(true);
+        const result = await getAll('genres');
+        if (result.data) setData(result.data);
+        setLoad(false);
+        setShowSpinner(false);
+      };
+
+      getData();
+    }
+  }, [load]);
 
   const form = useForm({
     initialValues: {
@@ -36,7 +54,12 @@ function GenreDashboard() {
             Panel de Autores
           </Title>
           <Container>
-            <TextInput color="yellow" placeholder="acción" label="Buscador" />
+            <TextInput
+              color="yellow"
+              placeholder="acción"
+              label="Buscador"
+              onChange={(event: any) => setSearch(event.target.value)}
+            />
             <Table highlightOnHover>
               <thead>
                 <tr>
@@ -46,7 +69,7 @@ function GenreDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {genres.map((item: any) => (
+                {result.map((item: any) => (
                   <tr
                     key={item.id}
                     onClick={() =>

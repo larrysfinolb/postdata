@@ -7,14 +7,31 @@ import HeaderAdmin from 'components/HeaderAdmin';
 import Layout from 'components/Layout';
 import Loader from 'components/Loader';
 import Section from 'components/Section';
-import useData from 'hooks/useData';
+import useSearcher from 'hooks/useSearcher';
 import React from 'react';
+import { getAll } from 'utils/db';
 import REGEX from 'utils/regex';
 
 function AuthorDashboard() {
+  const [load, setLoad] = React.useState(true);
   const [showSpinner, setShowSpinner] = React.useState(false);
+  const [data, setData] = React.useState([]);
 
-  const { data: authors, setLoad } = useData('authors', setShowSpinner);
+  const { result, setSearch } = useSearcher(data, ['id', 'name', 'active']);
+
+  React.useEffect(() => {
+    if (load) {
+      const getData = async () => {
+        setShowSpinner(true);
+        const result = await getAll('authors');
+        if (result.data) setData(result.data);
+        setLoad(false);
+        setShowSpinner(false);
+      };
+
+      getData();
+    }
+  }, [load]);
 
   const form = useForm({
     initialValues: {
@@ -37,7 +54,12 @@ function AuthorDashboard() {
             Panel de Autores
           </Title>
           <Container>
-            <TextInput color="yellow" placeholder="brandon" label="Buscador" />
+            <TextInput
+              color="yellow"
+              placeholder="brandon"
+              label="Buscador"
+              onChange={(event) => setSearch(event.target.value)}
+            />
             <Table highlightOnHover>
               <thead>
                 <tr>
@@ -47,7 +69,7 @@ function AuthorDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {authors.map((item: any) => (
+                {result.map((item: any) => (
                   <tr
                     key={item.id}
                     onClick={() =>
@@ -60,7 +82,7 @@ function AuthorDashboard() {
                   >
                     <td>{item.id}</td>
                     <td>{item.name}</td>
-                    <td>{item.status}</td>
+                    <td>{item.active ? 'Activado' : 'Desactivado'}</td>
                   </tr>
                 ))}
               </tbody>

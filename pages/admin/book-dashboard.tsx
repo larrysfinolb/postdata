@@ -9,48 +9,50 @@ import REGEX from 'utils/regex';
 import Loader from 'components/Loader';
 import BookForm from 'components/Forms/BookForm';
 import { getAll } from 'utils/db';
+import useSearcher from 'hooks/useSearcher';
 
 function ClientDashboard() {
   const [load, setLoad] = React.useState(true);
   const [showSpinner, setShowSpinner] = React.useState(false);
+  const [books, setBooks]: any = React.useState([]);
   const [data, setData]: any = React.useState({
-    books: [],
     authors: [],
     genres: [],
     books_has_authors: [],
     books_has_genres: [],
   });
 
+  const { result, setSearch } = useSearcher(books, ['id', 'title', 'language']);
+
   React.useEffect(() => {
     if (load) {
       const getData = async () => {
         setShowSpinner(true);
 
-        try {
-          const books: any = await getAll('books');
-          if (books.error) throw books.error;
-          const authors: any = await getAll('authors');
-          if (authors.error) throw authors.error;
-          const genres: any = await getAll('genres');
-          if (genres.error) throw genres.error;
-          const books_has_authors: any = await getAll('books_has_authors');
-          if (books_has_authors.error) throw books_has_authors.error;
-          const books_has_genres: any = await getAll('books_has_genres');
-          if (books_has_genres.error) throw books_has_genres.error;
+        const reusultBooks: any = await getAll('books');
+        const resultAuthors: any = await getAll('authors');
+        const resultGenres: any = await getAll('genres');
+        const resutBooks_has_authors: any = await getAll('books_has_authors');
+        const resultBooks_has_genres: any = await getAll('books_has_genres');
 
+        if (
+          reusultBooks.data &&
+          resultAuthors.data &&
+          resultGenres.data &&
+          resutBooks_has_authors &&
+          resultBooks_has_genres
+        ) {
+          setBooks(reusultBooks.data);
           setData({
-            books: books.data,
-            authors: authors.data,
-            genres: genres.data,
-            books_has_authors: books_has_authors.data,
-            books_has_genres: books_has_genres.data,
+            authors: resultAuthors.data,
+            genres: resultGenres.data,
+            books_has_authors: resutBooks_has_authors.data,
+            books_has_genres: resultBooks_has_genres.data,
           });
-        } catch (error) {
-          console.error(error);
         }
 
-        setShowSpinner(false);
         setLoad(false);
+        setShowSpinner(false);
       };
 
       getData();
@@ -96,7 +98,12 @@ function ClientDashboard() {
           Panel de Libros
         </Title>
         <Container>
-          <TextInput color="yellow" placeholder="imperio" label="Buscador" />
+          <TextInput
+            color="yellow"
+            placeholder="imperio"
+            label="Buscador"
+            onChange={(event) => setSearch(event.target.value)}
+          />
           <Table highlightOnHover>
             <thead>
               <tr>
@@ -106,7 +113,7 @@ function ClientDashboard() {
               </tr>
             </thead>
             <tbody>
-              {data.books.map((item: any) => (
+              {result.map((item: any) => (
                 <tr
                   key={item.id}
                   onClick={() => {

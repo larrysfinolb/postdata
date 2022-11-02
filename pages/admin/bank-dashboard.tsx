@@ -7,15 +7,37 @@ import HeaderAdmin from 'components/HeaderAdmin';
 import Layout from 'components/Layout';
 import Loader from 'components/Loader';
 import Section from 'components/Section';
-import useData from 'hooks/useData';
+import useSearcher from 'hooks/useSearcher';
 import React from 'react';
+import { getAll } from 'utils/db';
 import REGEX from 'utils/regex';
 
 type Props = {};
 
 function BankdDashboard({}: Props) {
+  const [load, setLoad] = React.useState(true);
   const [showSpinner, setShowSpinner] = React.useState(false);
-  const { data: banks, setLoad } = useData('banks', setShowSpinner);
+  const [data, setData] = React.useState([]);
+
+  const { result, setSearch } = useSearcher(data, [
+    'id',
+    'name',
+    'account_number',
+  ]);
+
+  React.useEffect(() => {
+    if (load) {
+      const getData = async () => {
+        setShowSpinner(true);
+        const result = await getAll('banks');
+        if (result.data) setData(result.data);
+        setLoad(false);
+        setShowSpinner(false);
+      };
+
+      getData();
+    }
+  }, [load]);
 
   const form = useForm({
     initialValues: {
@@ -44,7 +66,11 @@ function BankdDashboard({}: Props) {
             Panel de bancos
           </Title>
           <Container>
-            <TextInput label="Buscador" placeholder="banesco" />
+            <TextInput
+              label="Buscador"
+              placeholder="banesco"
+              onChange={(event: any) => setSearch(event.target.value)}
+            />
             <Table highlightOnHover>
               <thead>
                 <tr>
@@ -54,7 +80,7 @@ function BankdDashboard({}: Props) {
                 </tr>
               </thead>
               <tbody>
-                {banks.map((item: any) => (
+                {result.map((item: any) => (
                   <tr
                     key={item.id}
                     onClick={() =>
