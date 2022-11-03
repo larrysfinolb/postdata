@@ -1,65 +1,45 @@
-import styled from '@emotion/styled';
-import {
-  Alert,
-  Button,
-  LoadingOverlay,
-  Modal,
-  PasswordInput,
-  TextInput,
-  Title,
-} from '@mantine/core';
+import { Alert, Button, PasswordInput, TextInput, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import Layout from 'components/Layout';
+import Loader from 'components/Loader';
 import Paragraph from 'components/Paragraph';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React from 'react';
 import supabase from 'utils/supabase';
 
-const ResetPassword = styled.button`
-  outline: none;
-  border: none;
-  background: none;
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
 function AdminLogin() {
   const router = useRouter();
-  const [InvalidCredentials, setInvalidCredentials] = React.useState(false);
-  const [session, setSession] = React.useState(null);
+  const [error, setError] = React.useState('');
   const [showSpinner, setShowSpinner] = React.useState(false);
 
   React.useEffect(() => {
     const getSession = async () => {
+      setShowSpinner(true);
       try {
-        type Result = {
-          data: any;
-          error: any;
-        };
-        const {
-          data: { session },
-          error,
-        }: Result = await supabase.auth.getSession();
+        const result: any = await supabase.auth.getSession();
 
-        if (error) throw error;
-        if (session?.user.id !== '9feda9d6-0cec-4daf-9ce9-10d471104398') {
-          const { error } = await supabase.auth.signOut();
+        if (result.error) throw result.error.toString();
 
-          if (error) throw error;
-        } else {
-          router.push('/admin/client-dashboard');
+        if (result.data.session) {
+          if (
+            result.data.session.user.id ===
+            '9feda9d6-0cec-4daf-9ce9-10d471104398'
+          ) {
+            router.push('/admin/client-dashboard');
+          } else {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+          }
         }
       } catch (error) {
         console.error(error);
       }
+      setShowSpinner(false);
     };
 
     getSession();
-  }, [session]);
+  }, []);
 
   const form = useForm({
     initialValues: {
@@ -79,6 +59,7 @@ function AdminLogin() {
 
   return (
     <Layout title="Inicia sesión - Administrador">
+      <Loader show={showSpinner} />
       <section
         style={{
           display: 'flex',
@@ -88,11 +69,6 @@ function AdminLogin() {
           position: 'relative',
         }}
       >
-        <LoadingOverlay
-          loaderProps={{ color: 'yellow' }}
-          visible={showSpinner}
-          overlayBlur={2}
-        />
         <picture>
           <img
             src="https://efqndplvrwsimqbfyssn.supabase.co/storage/v1/object/sign/images/admin-login-lottie.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJpbWFnZXMvYWRtaW4tbG9naW4tbG90dGllLnN2ZyIsImlhdCI6MTY2NjcxNDAxNSwiZXhwIjoxOTgyMDc0MDE1fQ.0d3A_8FzsCoSvWIXa0_VKf_wVw0hG6CfXB6bQf6asdI"
@@ -111,22 +87,23 @@ function AdminLogin() {
           </div>
           <form
             onSubmit={form.onSubmit(async (values) => {
+              setShowSpinner(true);
               try {
-                type Result = {
-                  data: any;
-                  error: any;
-                };
-                const { data, error }: Result =
-                  await supabase.auth.signInWithPassword({
-                    email: values.email,
-                    password: values.password,
-                  });
+                const result: any = await supabase.auth.signInWithPassword({
+                  email: values.email,
+                  password: values.password,
+                });
 
-                if (error) throw error;
-                if (data) setSession(data?.session);
-              } catch (error) {
-                setInvalidCredentials(true);
+                if (result.error) throw result.error.toString();
+                router.push('/admin/client-dashboard');
+              } catch (error: any) {
+                if (error === 'AuthApiError: Invalid login credentials')
+                  setError(
+                    ' Los datos ingresados son incorrectos, te recordamos que este es el módulo de administador y si no eres uno de ellos te invitamos a que regreses al módulo de clientes.'
+                  );
+                else setError(error);
               }
+              setShowSpinner(false);
             })}
             style={{
               display: 'grid',
@@ -166,11 +143,9 @@ function AdminLogin() {
               </Button>
             </Link>
           </form>
-          {InvalidCredentials && (
-            <Alert title="Credenciales invalidas" color="red">
-              Los datos ingresados son incorrectos, te recordamos que este es el
-              módulo de administador y si no eres uno de ellos te invitamos a
-              que regreses al módulo de clientes.
+          {error && (
+            <Alert title="¡Error!" color="red">
+              {error}
             </Alert>
           )}
         </div>
