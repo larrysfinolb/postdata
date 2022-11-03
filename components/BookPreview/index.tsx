@@ -14,7 +14,7 @@ type Props = {
 
 const StyledContainer = styled.article`
   width: 220px;
-  height: 440px;
+  height: 450px;
   border-radius: 6px;
   background-color: #fff;
   border: 1px solid #222;
@@ -51,23 +51,28 @@ const StyledLink = styled.a`
 function Index({ id, title, author, cover_url, price }: Props) {
   return (
     <StyledContainer>
-      <Image
+      <img
         src={cover_url}
         alt={`Imagen del libro ${title}`}
-        width="200"
-        height="260"
-        style={{ margin: 'auto' }}
+        style={{ margin: 'auto', width: '95%', height: '260px' }}
+        loading="lazy"
       />
       <StyledDivider />
       <div style={{ width: '100%' }}>
-        <Text weight="bold" size={18} style={{ width: '100%' }}>
+        <Text weight="bold" lineClamp={1} size={18} style={{ width: '100%' }}>
           {title}
         </Text>
-        <Text weight="bold" color="#006854" size={14} style={{ width: '100%' }}>
+        <Text
+          weight="bold"
+          lineClamp={1}
+          color="#006854"
+          size={14}
+          style={{ width: '100%' }}
+        >
           {author}
         </Text>
       </div>
-      <Text weight="bold" size={36} style={{ width: '100%' }}>
+      <Text weight="bold" lineClamp={1} size={36} style={{ width: '100%' }}>
         {price}
         <StyledPrice>PDX</StyledPrice>
       </Text>
@@ -79,9 +84,11 @@ function Index({ id, title, author, cover_url, price }: Props) {
           rowGap: '4px',
         }}
       >
-        <Button fullWidth style={{ backgroundColor: '#FCB84C' }}>
-          Comprar
-        </Button>
+        <Link href={`/buy/book/${id}`} passHref>
+          <Button fullWidth style={{ backgroundColor: '#FCB84C' }}>
+            Comprar
+          </Button>
+        </Link>
         <Link href={`/books/${id}`}>
           <StyledLink>Ver libro</StyledLink>
         </Link>
