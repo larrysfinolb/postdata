@@ -7,7 +7,7 @@ const REGEX = {
   price: /^[0-9]+\.[0-9]{3,3}$/,
   copies: /^[0-9]+$/,
   active: /^true|false$/,
-  account: /^[0-9]{20,20}$/,
+  account_number: /^[0-9]{20,20}$/,
   email: /^\S+@\.\S+$/,
   balance: /^([0-9]+\.[0-9]{3,3}){0,1}$/,
 };

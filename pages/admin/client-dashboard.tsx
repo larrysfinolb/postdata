@@ -11,22 +11,39 @@ import {
   Checkbox,
   NumberInput,
   Alert,
-  LoadingOverlay,
 } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
 import AdminAuth from 'components/AdminAuth';
 import Container from 'components/Container';
 import { useForm } from '@mantine/form';
-import useData from 'hooks/useData';
 import REGEX from 'utils/regex';
-import useUpdateValues from 'hooks/useUpdateValues';
+import Loader from 'components/Loader';
+import { getAll, updateInDB } from 'utils/db';
+import useSearcher from 'hooks/useSearcher';
 
 type Props = {};
 
 function ClientDashboard({}: Props) {
+  const [load, setLoad] = React.useState(true);
   const [showSpinner, setShowSpinner] = React.useState(false);
-  const { data: clients, setLoad } = useData('clients', setShowSpinner);
+  const [data, setData] = React.useState([]);
   const [error, setError] = React.useState('');
+
+  const { result, setSearch } = useSearcher(data, ['id', 'name', 'email']);
+
+  React.useEffect(() => {
+    if (load) {
+      const getData = async () => {
+        setShowSpinner(true);
+        const result: any = getAll('clients');
+        if (result.data) setData(result.data);
+        setLoad(false);
+        setShowSpinner(false);
+      };
+
+      getData();
+    }
+  }, [load]);
 
   const form = useForm({
     initialValues: {
@@ -38,7 +55,6 @@ function ClientDashboard({}: Props) {
       active: false,
     },
     validate: {
-      id: (value) => (REGEX.id.test(value) ? null : 'Formato del ID invalido.'),
       email: (value) =>
         REGEX.email.test(value) ? null : 'Formato de correo invalido.',
       firstName: (value) =>
@@ -53,17 +69,18 @@ function ClientDashboard({}: Props) {
   return (
     <AdminAuth>
       <Layout title="Panel de clientes" Header={<HeaderAdmin />}>
+        <Loader show={showSpinner} />
         <Section>
-          <LoadingOverlay
-            loaderProps={{ color: 'yellow' }}
-            visible={showSpinner}
-            overlayBlur={2}
-          />
           <Title order={1} style={{ gridColumn: '1 / 3' }}>
             Panel de clientes
           </Title>
           <Container>
-            <TextInput color="yellow" placeholder="imperio" label="Buscador" />
+            <TextInput
+              color="yellow"
+              placeholder="imperio"
+              label="Buscador"
+              onChange={(value) => setSearch(value.target.value)}
+            />
             <Table>
               <thead>
                 <tr>
@@ -73,7 +90,7 @@ function ClientDashboard({}: Props) {
                 </tr>
               </thead>
               <tbody>
-                {clients.map((item: any) => (
+                {result.map((item: any) => (
                   <tr
                     key={item.id}
                     onClick={() =>
@@ -94,9 +111,6 @@ function ClientDashboard({}: Props) {
                 ))}
               </tbody>
             </Table>
-            <Button color="yellow" type="button" uppercase>
-              Generar reporte
-            </Button>
           </Container>
           <form
             style={{
@@ -107,21 +121,16 @@ function ClientDashboard({}: Props) {
               gap: '1rem',
             }}
             onSubmit={form.onSubmit(async (values: any) => {
-              if (values.id) {
-                const result: any = await useUpdateValues(
-                  'clients',
-                  {
-                    id: values.id,
-                    name: values.name,
-                    active: values.active,
-                  },
-                  form,
-                  setShowSpinner,
-                  setLoad
-                );
+              const { id, ...newValues } = values;
 
-                if (result) setError(result);
-              }
+              setShowSpinner(true);
+
+              const result: any = await updateInDB('clients', id, newValues);
+              if (result) setError(result);
+
+              form.reset();
+              setLoad(true);
+              setShowSpinner(false);
             })}
           >
             <TextInput

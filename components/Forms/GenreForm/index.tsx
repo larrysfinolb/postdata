@@ -1,7 +1,6 @@
 import { Alert, Button, Checkbox, TextInput } from '@mantine/core';
 import React from 'react';
-import useInsertValues from 'hooks/useInsertValues';
-import useUpdateValues from 'hooks/useUpdateValues';
+import { insertInDB, updateInDB } from 'utils/db';
 
 type Props = {
   form: any;
@@ -21,34 +20,21 @@ function GenreForm({ form, setLoad, setShowSpinner }: Props) {
         gap: '1rem',
       }}
       onSubmit={form.onSubmit(async (values: any) => {
-        if (values.id) {
-          const result: any = await useUpdateValues(
-            'genres',
-            {
-              id: values.id,
-              name: values.name,
-              active: values.active,
-            },
-            form,
-            setShowSpinner,
-            setLoad
-          );
+        const { id, ...newValues } = values;
 
+        setShowSpinner(true);
+
+        if (id) {
+          const result: any = await updateInDB('genres', id, newValues);
           if (result) setError(result);
         } else {
-          const result: any = await useInsertValues(
-            'genres',
-            {
-              name: values.name,
-              active: values.active,
-            },
-            form,
-            setShowSpinner,
-            setLoad
-          );
-
+          const result: any = await insertInDB('genres', [newValues]);
           if (result) setError(result);
         }
+
+        form.reset();
+        setLoad(true);
+        setShowSpinner(false);
       })}
     >
       <TextInput

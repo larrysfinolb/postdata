@@ -1,20 +1,43 @@
-import { Button, LoadingOverlay, Table, TextInput, Title } from '@mantine/core';
+import { Table, TextInput, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import AdminAuth from 'components/AdminAuth';
 import Container from 'components/Container';
 import ShoppingForm from 'components/Forms/ShoopingForm';
 import HeaderAdmin from 'components/HeaderAdmin';
 import Layout from 'components/Layout';
+import Loader from 'components/Loader';
 import Section from 'components/Section';
-import useData from 'hooks/useData';
+import useSearcher from 'hooks/useSearcher';
 import React from 'react';
+import { getAll } from 'utils/db';
 import REGEX from 'utils/regex';
 
 type Props = {};
 
 function ShoppingDashboard({}: Props) {
+  const [load, setLoad] = React.useState(true);
   const [showSpinner, setShowSpinner] = React.useState(false);
-  const { data: shoppings, setLoad } = useData('shoppings', setShowSpinner);
+  const [data, setData] = React.useState([]);
+
+  const { result, setSearch } = useSearcher(data, [
+    'id',
+    'clients_id',
+    'books_id',
+  ]);
+
+  React.useEffect(() => {
+    if (load) {
+      const getData = async () => {
+        setShowSpinner(true);
+        const result: any = getAll('shoppings');
+        if (result.data) setData(result.data);
+        setLoad(false);
+        setShowSpinner(false);
+      };
+
+      getData();
+    }
+  }, [load]);
 
   const form = useForm({
     initialValues: {
@@ -24,7 +47,6 @@ function ShoppingDashboard({}: Props) {
       active: false,
     },
     validate: {
-      id: (value) => (REGEX.id.test(value) ? null : 'Formato de id invalido.'),
       client: (value) =>
         REGEX.name.test(value) ? null : 'Formato de cliente invalido.',
       book: (value) =>
@@ -34,12 +56,8 @@ function ShoppingDashboard({}: Props) {
 
   return (
     <AdminAuth>
+      <Loader show={showSpinner} />
       <Layout title="Panel de compras" Header={<HeaderAdmin />}>
-        <LoadingOverlay
-          loaderProps={{ color: 'yellow' }}
-          visible={showSpinner}
-          overlayBlur={2}
-        />
         <Section>
           <Title
             order={1}
@@ -49,7 +67,11 @@ function ShoppingDashboard({}: Props) {
             Panel de compras
           </Title>
           <Container>
-            <TextInput label="Buscador" placeholder="imperio" />
+            <TextInput
+              label="Buscador"
+              placeholder="imperio"
+              onChange={(event) => setSearch(event.target.value)}
+            />
             <Table highlightOnHover>
               <thead>
                 <tr>
@@ -59,7 +81,7 @@ function ShoppingDashboard({}: Props) {
                 </tr>
               </thead>
               <tbody>
-                {shoppings.map((item: any) => (
+                {result.map((item: any) => (
                   <tr
                     key={item.id}
                     onClick={() =>
@@ -77,15 +99,14 @@ function ShoppingDashboard({}: Props) {
                 ))}
               </tbody>
             </Table>
-            <Button color="yellow" type="submit" uppercase>
-              Generar reporte
-            </Button>
           </Container>
-          <ShoppingForm
-            form={form}
-            setLoad={setLoad}
-            setShowSpinner={setShowSpinner}
-          />
+          <div>
+            <ShoppingForm
+              form={form}
+              setLoad={setLoad}
+              setShowSpinner={setShowSpinner}
+            />
+          </div>
         </Section>
       </Layout>
     </AdminAuth>

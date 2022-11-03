@@ -1,18 +1,41 @@
-import { Button, LoadingOverlay, Table, TextInput, Title } from '@mantine/core';
+import { Table, TextInput, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import AdminAuth from 'components/AdminAuth';
 import Container from 'components/Container';
 import PaymentForm from 'components/Forms/PaymentForm';
 import HeaderAdmin from 'components/HeaderAdmin';
 import Layout from 'components/Layout';
+import Loader from 'components/Loader';
 import Section from 'components/Section';
-import useData from 'hooks/useData';
+import useSearcher from 'hooks/useSearcher';
 import React from 'react';
+import { getAll } from 'utils/db';
 import REGEX from 'utils/regex';
 
 function PaymentDashboard() {
+  const [load, setLoad] = React.useState(true);
   const [showSpinner, setShowSpinner] = React.useState(false);
-  const { data: payments, setLoad } = useData('payments', setShowSpinner);
+  const [data, setData] = React.useState([]);
+
+  const { result, setSearch } = useSearcher(data, [
+    'id',
+    'clients_id',
+    'active',
+  ]);
+
+  React.useEffect(() => {
+    if (load) {
+      const getData = async () => {
+        setShowSpinner(true);
+        const result: any = getAll('payments');
+        if (result.data) setData(result.data);
+        setLoad(false);
+        setShowSpinner(false);
+      };
+
+      getData();
+    }
+  }, [load]);
 
   const form = useForm({
     initialValues: {
@@ -25,7 +48,6 @@ function PaymentDashboard() {
     },
 
     validate: {
-      id: (value) => (REGEX.id.test(value) ? null : 'Formato del id invalido.'),
       amount: (value) =>
         REGEX.price.test(value) ? null : 'Formato del monto invalido.',
       client: (value) =>
@@ -38,18 +60,18 @@ function PaymentDashboard() {
 
   return (
     <AdminAuth>
+      <Loader show={showSpinner} />
       <Layout title="Panal de pagos" Header={<HeaderAdmin />}>
         <Section>
-          <LoadingOverlay
-            loaderProps={{ color: 'yellow' }}
-            visible={showSpinner}
-            overlayBlur={2}
-          />
           <Title order={1} style={{ gridColumn: '1 / 3' }}>
             Panel de pagos
           </Title>
           <Container>
-            <TextInput label="Buscador" placeholder="1" />
+            <TextInput
+              label="Buscador"
+              placeholder="1"
+              onChange={(value) => setSearch(value.target.value)}
+            />
             <Table highlightOnHover>
               <thead>
                 <tr>
@@ -59,7 +81,7 @@ function PaymentDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {payments.map((item: any) => (
+                {result.map((item: any) => (
                   <tr
                     key={item.id}
                     onClick={() =>
@@ -75,20 +97,19 @@ function PaymentDashboard() {
                   >
                     <td>{item.id}</td>
                     <td>{item.clients_id}</td>
-                    <td>{item.active}</td>
+                    <td>{item.active ? 'Activado' : 'Desactivado'}</td>
                   </tr>
                 ))}
               </tbody>
             </Table>
-            <Button color="yellow" type="button" uppercase>
-              Generar reporte
-            </Button>
           </Container>
-          <PaymentForm
-            form={form}
-            setLoad={setLoad}
-            setShowSpinner={setShowSpinner}
-          />
+          <div>
+            <PaymentForm
+              form={form}
+              setLoad={setLoad}
+              setShowSpinner={setShowSpinner}
+            />
+          </div>
         </Section>
       </Layout>
     </AdminAuth>

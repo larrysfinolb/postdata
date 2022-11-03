@@ -23,7 +23,12 @@ function Layout({
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
       <AppShell header={Header}>
-        <Container size={widthContent} pt={22} px={12}>
+        <Container
+          size={widthContent}
+          pt={22}
+          px={12}
+          style={{ position: 'relative' }}
+        >
           {children}
         </Container>
       </AppShell>
