@@ -7,29 +7,8 @@ import { Divider, Text, Group } from '@mantine/core';
 import colors from 'utils/colors';
 import Link from 'next/link';
 import BookPreview from 'components/BookPreview';
-
-const genres = [
-  'Fantasía',
-  'Terror',
-  'Educación',
-  'Suspenso',
-  'Accíon',
-  'etc',
-  'etc',
-  'etc',
-  'etc',
-];
-
-const books = [
-  {
-    id: 4,
-    title: 'El imperio final',
-    author: 'Brandon Sanderson',
-    cover_url: 'https://m.media-amazon.com/images/I/81mZKTCZMaL.jpg',
-    price: 200,
-    copies: 2,
-  },
-];
+import supabase from 'utils/supabase';
+import React from 'react';
 
 interface Props {
   primary?: boolean;
@@ -60,42 +39,61 @@ const StyledGenresText = styled.a`
   }
 `;
 
-const Home: NextPage = () => (
-  <Layout title="home" Header={<Header />}>
-    <Heading order={1} styles={{ textAlign: 'center' }}>
-      Librería Postdata
-    </Heading>
-    <StyledContainer>
+/*const fetchSession = async () => {
+  const { data, error } = await supabase.auth.getSession();
+
+  console.log(data, error);
+};*/
+
+const Home: NextPage = () => {
+  const [books, setBooks] = React.useState<Array<any> | null>([]);
+  const [genres, setGenres] = React.useState<Array<any> | null>([]);
+
+  React.useEffect(() => {
+    const fetchBooks = async () => {
+      let { data, error } = await supabase.from('books').select('*');
+
+      setBooks(data);
+    };
+    const fetchGenres = async () => {
+      let { data, error } = await supabase.from('genres').select('*');
+
+      setGenres(data);
+    };
+    fetchGenres();
+    fetchBooks();
+  }, []);
+  return (
+    <Layout title="home" Header={<Header />}>
+      <Heading order={1} styles={{ textAlign: 'center' }}>
+        Librería Postdata
+      </Heading>
+      <StyledContainer>
+        <Divider size="sm" />
+        <Text align="center" weight="bold" color="dark" size={18} mt={35}>
+          E-commerce de la librería <ColoredText>Postdata</ColoredText>, compra
+          tus libros favoritos de forma <ColoredText>online</ColoredText> y pasa
+          por nuestra librería a recibirlos.
+        </Text>
+        <StyledSubTitle primary>Géneros destacados</StyledSubTitle>
+        <Divider size="sm" />
+      </StyledContainer>
+      <Group>
+        {genres?.map((genre) => (
+          <Link key={genre.name} href={`/books/genre/${genre.id}`}>
+            <StyledGenresText>{genre.name}</StyledGenresText>
+          </Link>
+        ))}
+      </Group>
+      <StyledSubTitle>Libros destacados</StyledSubTitle>
       <Divider size="sm" />
-      <Text align="center" weight="bold" color="dark" size={18} mt={35}>
-        E-commerce de la librería <ColoredText>Postdata</ColoredText>, compra
-        tus libros favoritos de forma <ColoredText>online</ColoredText> y pasa
-        por nuestra librería a recibirlos.
-      </Text>
-      <StyledSubTitle primary>Géneros destacados</StyledSubTitle>
-      <Divider size="sm" />
-    </StyledContainer>
-    <Group>
-      {genres.map((genre) => (
-        <Link key={genre} href={`/books/${genre}`}>
-          <StyledGenresText>{genre}</StyledGenresText>
-        </Link>
-      ))}
-    </Group>
-    {genres
-      .filter((genre, idx) => idx < 3)
-      .map((genre) => (
-        <section key={genre}>
-          <StyledSubTitle>Libros destacados de {genre}</StyledSubTitle>
-          <Divider size="sm" />
-          {books
-            .filter((book, idx) => idx < 3)
-            .map((book) => (
-              <BookPreview key={book.id} {...book} />
-            ))}
-        </section>
-      ))}
-  </Layout>
-);
+      <Group>
+        {books?.map((book) => (
+          <BookPreview key={book.id} {...book} />
+        ))}
+      </Group>
+    </Layout>
+  );
+};
 
 export default Home;

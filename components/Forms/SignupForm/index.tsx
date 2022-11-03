@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from '@mantine/form';
 import {
   PasswordInput,
@@ -15,11 +15,16 @@ import Link from 'next/link';
 import { termsAndConditions } from 'utils/termsAndConditions';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
-
+import supabase from 'utils/supabase';
+import { useRouter } from 'next/router';
 type Props = {};
 
 function Index({}: Props) {
   const theme: MantineTheme = useMantineTheme();
+
+  const [opened, setOpened] = useState(false);
+
+  const router = useRouter();
 
   const form = useForm({
     initialValues: {
@@ -47,8 +52,15 @@ function Index({}: Props) {
           ? null
           : 'Apellido no valido',
 
+      password: (value) =>
+        value.length >= 6
+          ? null
+          : 'La contraseña debe contener al menos 6 caracteres',
+
       checkPassword: (value, object) => {
-        return value === object.password ? null : 'La contraseña no es la misma';
+        return value === object.password
+          ? null
+          : 'La contraseña no es la misma';
       },
 
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Correo no valido'),
@@ -84,9 +96,33 @@ function Index({}: Props) {
       },
     },
   };
+
   return (
     <form
-      onSubmit={form.onSubmit((values) => console.log(values))}
+      onSubmit={form.onSubmit(async (values) => {
+        const { data, error } = await supabase.auth.signUp({
+          email: values.email,
+          password: values.password,
+          options: {
+            data: {
+              first_name: values.firstname,
+              last_name: values.lastname,
+              balance: 0,
+              birthday: values.birthday,
+            },
+          },
+        });
+
+        if (!error) {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: values.email,
+            password: values.password,
+          });
+          router.push('/validate');
+        } else {
+          alert('Hubo un error: ' + error);
+        }
+      })}
       style={{
         display: 'grid',
         width: '100%',
@@ -158,12 +194,23 @@ function Index({}: Props) {
         {...form.getInputProps('birthday')}
         style={{ gridArea: 'birthday' }}
         styles={textInputStyles}
-        minDate={dayjs(new Date()).startOf('year').subtract(80, 'years').toDate()}
-        maxDate={dayjs(new Date()).startOf('day').subtract(16, 'years').toDate()}
+        minDate={dayjs(new Date())
+          .startOf('year')
+          .subtract(80, 'years')
+          .toDate()}
+        maxDate={dayjs(new Date())
+          .startOf('day')
+          .subtract(16, 'years')
+          .toDate()}
         locale="es"
       />
       <Radio.Group name="sex" label="Sexo" withAsterisk required>
-        <Radio required value="male" label="Hombre" styles={checkBoxInputStyles} />
+        <Radio
+          required
+          value="male"
+          label="Hombre"
+          styles={checkBoxInputStyles}
+        />
         <Radio value="female" label="Mujer" styles={checkBoxInputStyles} />
         <Radio value="other" label="Otro" styles={checkBoxInputStyles} />
       </Radio.Group>
@@ -184,14 +231,34 @@ function Index({}: Props) {
         {...form.getInputProps('termsOfService', { type: 'checkbox' })}
         styles={checkBoxInputStyles}
       />
-      <div style={{ gridArea: 'isRegister', width: '100%', height: '100%', display: 'grid', placeContent: 'center' }}>
-        <Link href={'#'}>
-          <a style={{ textAlign: 'center', textDecoration: 'none', color: theme.colors.customGreen[0] }}>
+      <div
+        style={{
+          gridArea: 'isRegister',
+          width: '100%',
+          height: '100%',
+          display: 'grid',
+          placeContent: 'center',
+        }}
+      >
+        <Link href={'/login'}>
+          <a
+            style={{
+              textAlign: 'center',
+              textDecoration: 'none',
+              color: theme.colors.customGreen[0],
+            }}
+          >
             ¿Ya tienes una cuenta?
           </a>
         </Link>
       </div>
-      <Button type="submit" style={{ gridArea: 'submit', backgroundColor: theme.colors.customYellow[0] }}>
+      <Button
+        type="submit"
+        style={{
+          gridArea: 'submit',
+          backgroundColor: theme.colors.customYellow[0],
+        }}
+      >
         Registrarse
       </Button>
     </form>
