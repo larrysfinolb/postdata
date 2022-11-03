@@ -10,29 +10,6 @@ import BookPreview from 'components/BookPreview';
 import supabase from 'utils/supabase';
 import React from 'react';
 
-const genres = [
-  'Fantasía',
-  'Terror',
-  'Educación',
-  'Suspenso',
-  'Accíon',
-  'etc',
-  'etc',
-  'etc',
-  'etc',
-];
-
-const books = [
-  {
-    id: 4,
-    title: 'El imperio final',
-    author: 'Brandon Sanderson',
-    cover_url: 'https://m.media-amazon.com/images/I/81mZKTCZMaL.jpg',
-    price: 200,
-    copies: 2,
-  },
-];
-
 interface Props {
   primary?: boolean;
 }
@@ -62,15 +39,29 @@ const StyledGenresText = styled.a`
   }
 `;
 
-const fetchSession = async () => {
+/*const fetchSession = async () => {
   const { data, error } = await supabase.auth.getSession();
 
   console.log(data, error);
-};
+};*/
 
 const Home: NextPage = () => {
+  const [books, setBooks] = React.useState<Array<any> | null>([]);
+  const [genres, setGenres] = React.useState<Array<any> | null>([]);
+
   React.useEffect(() => {
-    fetchSession();
+    const fetchBooks = async () => {
+      let { data, error } = await supabase.from('books').select('*');
+
+      setBooks(data);
+    };
+    const fetchGenres = async () => {
+      let { data, error } = await supabase.from('genres').select('*');
+
+      setGenres(data);
+    };
+    fetchGenres();
+    fetchBooks();
   }, []);
   return (
     <Layout title="home" Header={<Header />}>
@@ -88,25 +79,19 @@ const Home: NextPage = () => {
         <Divider size="sm" />
       </StyledContainer>
       <Group>
-        {genres.map((genre) => (
-          <Link key={genre} href={`/books/${genre}`}>
-            <StyledGenresText>{genre}</StyledGenresText>
+        {genres?.map((genre) => (
+          <Link key={genre.name} href={`/books/genre/${genre.id}`}>
+            <StyledGenresText>{genre.name}</StyledGenresText>
           </Link>
         ))}
       </Group>
-      {genres
-        .filter((genre, idx) => idx < 3)
-        .map((genre) => (
-          <section key={genre}>
-            <StyledSubTitle>Libros destacados de {genre}</StyledSubTitle>
-            <Divider size="sm" />
-            {books
-              .filter((book, idx) => idx < 3)
-              .map((book) => (
-                <BookPreview key={book.id} {...book} />
-              ))}
-          </section>
+      <StyledSubTitle>Libros destacados</StyledSubTitle>
+      <Divider size="sm" />
+      <Group>
+        {books?.map((book) => (
+          <BookPreview key={book.id} {...book} />
         ))}
+      </Group>
     </Layout>
   );
 };
