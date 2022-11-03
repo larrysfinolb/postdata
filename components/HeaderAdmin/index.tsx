@@ -47,45 +47,44 @@ function HeaderAdmin({ innerPadding = 8 }: Props) {
           flexDirection: 'row',
           padding: `0 ${innerPadding}px`,
           flexWrap: 'nowrap',
-        }}>
-        <nav style={{width: '100%'}}>
+        }}
+      >
+        <nav style={{ width: '100%' }}>
           <ul
             style={{
               height: '100%',
               listStyle: 'none',
               padding: 0,
               ...flexStyles,
-            }}>
+            }}
+          >
             <li>
-              <Link url='/admin/client-dashboard'>Clientes</Link>
+              <Link url="/admin/client-dashboard">Clientes</Link>
             </li>
             <li>
-              <Link url='/admin/book-dashboard'>Libros</Link>
+              <Link url="/admin/book-dashboard">Libros</Link>
             </li>
             <li>
-              <Link url='/admin/author-dashboard'>Autores</Link>
+              <Link url="/admin/author-dashboard">Autores</Link>
             </li>
             <li>
-              <Link url='/admin/genre-dashboard'>Géneros</Link>
+              <Link url="/admin/genre-dashboard">Géneros</Link>
             </li>
             <li>
-              <Link url='/admin/payment-dashboard'>Pagos</Link>
+              <Link url="/admin/payment-dashboard">Pagos</Link>
             </li>
             <li>
-              <Link url='/admin/bank-dashboard'>Bancos</Link>
+              <Link url="/admin/bank-dashboard">Bancos</Link>
             </li>
             <li>
-              <Link url='/admin/shopping-dashboard'>Compras</Link>
+              <Link url="/admin/shopping-dashboard">Compras</Link>
             </li>
             <li>
-              <Link url='/admin/maintenance'>Mantenimiento</Link>
-            </li>
-            <li>
-              <Link url='/admin/help'>Ayuda</Link>
+              <Link url="#">Ayuda</Link>
             </li>
             <li>
               <ButtonLink
-                type='button'
+                type="button"
                 onClick={async () => {
                   try {
                     const { error } = await supabase.auth.signOut();
@@ -96,7 +95,8 @@ function HeaderAdmin({ innerPadding = 8 }: Props) {
                   } catch (error) {
                     console.error(error);
                   }
-                }}>
+                }}
+              >
                 Salir
               </ButtonLink>
             </li>
