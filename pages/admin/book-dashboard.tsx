@@ -14,13 +14,10 @@ import useSearcher from 'hooks/useSearcher';
 function ClientDashboard() {
   const [load, setLoad] = React.useState(true);
   const [showSpinner, setShowSpinner] = React.useState(false);
+
   const [books, setBooks]: any = React.useState([]);
-  const [data, setData]: any = React.useState({
-    authors: [],
-    genres: [],
-    books_has_authors: [],
-    books_has_genres: [],
-  });
+  const [books_has_authors, setBooks_has_authors]: any = React.useState([]);
+  const [books_has_genres, setBooks_has_genres]: any = React.useState([]);
 
   const { result, setSearch } = useSearcher(books, ['id', 'title', 'language']);
 
@@ -29,27 +26,15 @@ function ClientDashboard() {
       const getData = async () => {
         setShowSpinner(true);
 
-        const reusultBooks: any = await getAll('books');
-        const resultAuthors: any = await getAll('authors');
-        const resultGenres: any = await getAll('genres');
-        const resutBooks_has_authors: any = await getAll('books_has_authors');
+        const resultBooks: any = await getAll('books');
+        const resultBooks_has_authors: any = await getAll('books_has_authors');
         const resultBooks_has_genres: any = await getAll('books_has_genres');
 
-        if (
-          reusultBooks.data &&
-          resultAuthors.data &&
-          resultGenres.data &&
-          resutBooks_has_authors &&
-          resultBooks_has_genres
-        ) {
-          setBooks(reusultBooks.data);
-          setData({
-            authors: resultAuthors.data,
-            genres: resultGenres.data,
-            books_has_authors: resutBooks_has_authors.data,
-            books_has_genres: resultBooks_has_genres.data,
-          });
-        }
+        if (resultBooks.data) setBooks(resultBooks.data);
+        if (resultBooks_has_authors.data)
+          setBooks_has_authors(resultBooks_has_authors.data);
+        if (resultBooks_has_genres.data)
+          setBooks_has_genres(resultBooks_has_genres.data);
 
         setLoad(false);
         setShowSpinner(false);
@@ -117,6 +102,13 @@ function ClientDashboard() {
                 <tr
                   key={item.id}
                   onClick={() => {
+                    const b_h_a = books_has_authors.filter(
+                      (author: any) => author.books_id == item.id
+                    );
+                    const b_h_g = books_has_genres.filter(
+                      (genre: any) => genre.books_id == item.id
+                    );
+
                     form.setValues({
                       id: item.id,
                       title: item.title,
@@ -124,12 +116,10 @@ function ClientDashboard() {
                       synopsis: item.synopsis,
                       language: item.language,
                       cover_url: item.cover_url,
-                      authors_id: data.books_has_authors.map((b_h_a: any) => {
-                        if (b_h_a.books_id === item.id) return b_h_a.authors_id;
-                      }),
-                      genres_id: data.books_has_genres.map((b_h_g: any) => {
-                        if (b_h_g.books_id === item.id) return b_h_g.genres_id;
-                      }),
+                      authors_id: b_h_a.map((i: any) =>
+                        i.authors_id.toString()
+                      ),
+                      genres_id: b_h_g.map((i: any) => i.genres_id.toString()),
                       price: item.price,
                       copies: item.copies,
                       active: item.active,
@@ -146,7 +136,6 @@ function ClientDashboard() {
         </Container>
         <div>
           <BookForm
-            data={data}
             setLoad={setLoad}
             form={form}
             setShowSpinner={setShowSpinner}

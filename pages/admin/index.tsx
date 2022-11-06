@@ -139,7 +139,7 @@ function AdminLogin() {
             >
               Inciar sesión
             </Button>
-            <Link href="/index">
+            <Link href="/">
               <Button
                 component="a"
                 variant="outline"

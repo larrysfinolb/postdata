@@ -20,9 +20,9 @@ const getLastInsert = async (table: string) => {
 
     const data = result.data[result.data.length - 1];
 
-    return { type: 'data', data };
+    return { data: data.data, error: null };
   } catch (error) {
-    return { type: 'error', error };
+    return { data: null, error };
   }
 };
 
@@ -56,9 +56,9 @@ const deleteInDB = async (table: string, column: string, id: number) => {
 
     if (result.error) throw result.error.details;
 
-    return null;
+    return { data: result.data, error: null };
   } catch (error) {
-    return error;
+    return { data: null, error: error };
   }
 };
 
