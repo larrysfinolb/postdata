@@ -17,8 +17,19 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import supabase from 'utils/supabase';
 import { useRouter } from 'next/router';
+import styled from '@emotion/styled';
+import colors from 'utils/colors';
 
 type Props = {};
+
+const LostPassButton = styled.button`
+  color: ${colors.green};
+  width: 100%;
+  cursor: pointer;
+  background-color: #ffffff00;
+  grid-area: lostPass;
+  border: none;
+`;
 
 function Index({}: Props) {
   const theme: MantineTheme = useMantineTheme();
@@ -78,7 +89,8 @@ function Index({}: Props) {
         gridTemplateAreas: `
                     'email email'
                     'password password'
-                    'register submit'
+                    'lostPass lostPass'
+                    'register submit' 
                 `,
         gap: '15px',
         placeContent: 'center',
@@ -135,6 +147,18 @@ function Index({}: Props) {
       >
         {'Iniciar sesión'}
       </Button>
+      <Link href={'/recovery'}>
+        <a
+          style={{
+            textAlign: 'center',
+            textDecoration: 'none',
+            color: theme.colors.customGreen[0],
+            gridArea: 'lostPass',
+          }}
+        >
+          ¿Olvidaste tu contraseña?
+        </a>
+      </Link>
     </form>
   );
 }

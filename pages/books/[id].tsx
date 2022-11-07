@@ -13,14 +13,15 @@ import Header from 'components/HeaderUser';
 import Heading from 'components/Heading';
 import Paragraph from 'components/Paragraph';
 import ListBadges from 'components/ListBadges';
+import { useRouter } from 'next/router';
+import supabase from 'utils/supabase';
 
-const data = [
-  {
-    title: 'The Final Empire',
-    author: 'Brandon Sanderson',
-    coverUrl:
-      'https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1617768316l/68428._SY475_.jpg',
-    sinopsis: `For a thousand years the ash fell and no flowers bloomed. For a thousand years the Skaa slaved in
+const data = {
+  title: 'The Final Empire',
+  author: 'Brandon Sanderson',
+  cover_url:
+    'https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1617768316l/68428._SY475_.jpg',
+  synopsis: `For a thousand years the ash fell and no flowers bloomed. For a thousand years the Skaa slaved in
     misery and lived in fear. For a thousand years the Lord Ruler, the "Sliver of Infinity," reigned
     with absolute power and ultimate terror, divinely invincible. Then, when hope was so long lost that
     not even its memory remained, a terribly scarred, heart-broken half-Skaa rediscovered it in the
@@ -38,10 +39,9 @@ const data = [
     question: What if the prophesied hero failed to defeat the Dark Lord? The answer will be found in
     the Misborn Trilogy, a saga of surprises that begins with the book in your hands. Fantasy will never
     be the same again`,
-    price: 850,
-    genders: ['Acción', 'Fantasía'],
-  },
-];
+  price: 850,
+  genders: ['Acción', 'Fantasía'],
+};
 
 type Book = {
   title: string;
@@ -53,11 +53,29 @@ type Book = {
 };
 
 function Book() {
-  const [book, setBook] = React.useState(Array<Book>());
+  const [book, setBook] = React.useState(data);
+  const [isLoading, setLoading] = React.useState(true);
+
+  const router = useRouter();
+  const { id } = router.query;
 
   React.useEffect(() => {
-    setBook(data);
-  }, []);
+    const getBook = async () => {
+      const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .eq('id', id);
+
+      if (data) {
+        setBook(data[0]);
+        setLoading(false);
+        console.log(data[0]);
+      }
+
+      error && alert(error);
+    };
+    getBook();
+  }, [id]);
 
   const theme: MantineTheme = useMantineTheme();
   const stylesContainer: object = {
@@ -83,7 +101,7 @@ function Book() {
 
   return (
     <Layout title="Detalles del libro" Header={<Header />}>
-      {book.length === 0 ? (
+      {isLoading ? (
         <LoadingOverlay visible={true} overlayBlur={2} />
       ) : (
         <Grid gutter={0}>
@@ -91,12 +109,12 @@ function Book() {
             <div style={{ ...stylesContainer, alignItems: 'center' }}>
               <div style={stylesImage}>
                 <Image
-                  src={`${book[0].coverUrl}`}
-                  alt={`Portada del libro ${book[0].title}`}
+                  src={`${book.cover_url}`}
+                  alt={`Portada del libro ${book.title}`}
                 />
               </div>
 
-              <Text style={stylesPrice}>{`${book[0].price} BC`}</Text>
+              <Text style={stylesPrice}>{`${book.price} BC`}</Text>
 
               <Button color="yellow" type="button">
                 Comprar
@@ -107,18 +125,18 @@ function Book() {
             <section style={{ ...stylesContainer, gap: '3rem' }}>
               <div style={stylesContainer}>
                 <div>
-                  <Heading order={1}>{book[0].title}</Heading>
-                  <p style={styleAuthor}>{book[0].author}</p>
+                  <Heading order={1}>{book.title}</Heading>
+                  <p style={styleAuthor}>{book.author}</p>
                 </div>
 
-                <ListBadges>{book[0].genders}</ListBadges>
+                {/*<ListBadges>{book.genders}</ListBadges>*/}
               </div>
 
               <article style={stylesContainer}>
                 <Heading order={2} size="h3">
-                  {book[0].title}
+                  {book.title}
                 </Heading>
-                <Paragraph>{book[0].sinopsis}</Paragraph>
+                <Paragraph>{book.synopsis}</Paragraph>
               </article>
             </section>
           </Grid.Col>

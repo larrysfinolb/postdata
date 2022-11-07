@@ -19,11 +19,13 @@ function ListBadges({ children }: Props) {
     backgroundColor: theme.colors.customGreen[0],
   };
 
+  console.log(children);
+
   return (
     <ul style={stylesUl}>
       {children.map((badge, index) => (
         <li key={index}>
-          <Badge size='xl' variant='filled' style={stylesBadge}>
+          <Badge size="xl" variant="filled" style={stylesBadge}>
             {badge}
           </Badge>
         </li>
