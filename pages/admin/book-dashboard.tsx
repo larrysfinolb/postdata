@@ -70,7 +70,7 @@ function ClientDashboard() {
         value.length > 0 ? null : 'Selecciona los autores.',
       genres_id: (value) =>
         value.length > 0 ? null : 'Selecciona los géneros',
-      price: (value) => (value >= 0.001 ? null : 'Rango de precio invalido.'),
+      price: (value) => (value >= 0.01 ? null : 'Rango de precio invalido.'),
       copies: (value) => (value >= 0 ? null : 'Rango de copias invalido.'),
     },
   });
