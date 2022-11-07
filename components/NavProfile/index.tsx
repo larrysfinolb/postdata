@@ -28,7 +28,13 @@ function Index({}: Props) {
     console.log(user);
 
     if (user) {
-      setLogin(user);
+      const { data: clients, error } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('email', user.email);
+      if (clients) {
+        setLogin(clients[0]);
+      }
     } else {
       setLogin(null);
     }
@@ -77,13 +83,13 @@ function Index({}: Props) {
             size={16}
             weight="bold"
             style={{ fontSmooth: 'antialiased ', cursor: 'pointer' }}
-          >{`${isLogin.user_metadata.first_name} ${isLogin.user_metadata.last_name}`}</Text>
+          >{`${isLogin.first_name} ${isLogin.last_name}`}</Text>
         </Menu.Target>
 
         <Menu.Dropdown>
           <Menu.Label>Cuenta</Menu.Label>
           <Menu.Item>
-            <Text>{`Saldo: ${isLogin.user_metadata.balance}pdx`}</Text>
+            <Text>{`Saldo: ${isLogin.balance}pdx`}</Text>
           </Menu.Item>
           <Menu.Item>
             <Text style={{ cursor: 'pointer' }}>Comprar saldo</Text>

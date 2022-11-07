@@ -87,7 +87,7 @@ const Home: NextPage = () => {
       </Group>
       <StyledSubTitle>Libros destacados</StyledSubTitle>
       <Divider size="sm" />
-      <Group>
+      <Group style={{ placeContent: 'center', gap: '0px' }}>
         {books?.map((book) => (
           <BookPreview key={book.id} {...book} />
         ))}

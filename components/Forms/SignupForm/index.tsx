@@ -22,7 +22,7 @@ type Props = {};
 function Index({}: Props) {
   const theme: MantineTheme = useMantineTheme();
 
-  const [opened, setOpened] = useState(false);
+  const [gender, setGender] = useState('H');
 
   const router = useRouter();
 
@@ -97,6 +97,16 @@ function Index({}: Props) {
     },
   };
 
+  const handleMaleChange = () => {
+    setGender('H');
+  };
+  const handleFemaleChange = () => {
+    setGender('M');
+  };
+  const handleOtherChange = () => {
+    setGender('O');
+  };
+
   return (
     <form
       onSubmit={form.onSubmit(async (values) => {
@@ -114,10 +124,17 @@ function Index({}: Props) {
         });
 
         if (!error) {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: values.email,
-            password: values.password,
-          });
+          const { data: clients, error: clientError } = await supabase
+            .from('clients')
+            .insert([
+              {
+                email: values.email,
+                first_name: values.firstname,
+                last_name: values.lastname,
+                birthday: values.birthday,
+                gender: gender,
+              },
+            ]);
           router.push('/validate');
         } else {
           alert('Hubo un error: ' + error);
@@ -210,9 +227,20 @@ function Index({}: Props) {
           value="male"
           label="Hombre"
           styles={checkBoxInputStyles}
+          onChange={handleMaleChange}
         />
-        <Radio value="female" label="Mujer" styles={checkBoxInputStyles} />
-        <Radio value="other" label="Otro" styles={checkBoxInputStyles} />
+        <Radio
+          value="female"
+          label="Mujer"
+          styles={checkBoxInputStyles}
+          onChange={handleFemaleChange}
+        />
+        <Radio
+          value="other"
+          label="Otro"
+          styles={checkBoxInputStyles}
+          onChange={handleOtherChange}
+        />
       </Radio.Group>
 
       <Textarea
