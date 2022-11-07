@@ -95,7 +95,9 @@ function AdminLogin() {
                 });
 
                 if (result.error) throw result.error.toString();
+
                 router.push('/admin/client-dashboard');
+                return;
               } catch (error: any) {
                 if (error === 'AuthApiError: Invalid login credentials')
                   setError(
@@ -129,7 +131,12 @@ function AdminLogin() {
               style={{ gridArea: 'password' }}
               {...form.getInputProps('password')}
             />
-            <Button type="submit" style={{ gridArea: 'submit' }} color="yellow">
+            <Button
+              type="submit"
+              style={{ gridArea: 'submit' }}
+              color="yellow"
+              uppercase
+            >
               Inciar sesión
             </Button>
             <Link href="/index">
@@ -138,6 +145,7 @@ function AdminLogin() {
                 variant="outline"
                 style={{ gridArea: 'cancel' }}
                 color="green"
+                uppercase
               >
                 Regresar como cliente
               </Button>

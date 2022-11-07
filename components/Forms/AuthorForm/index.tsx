@@ -62,7 +62,7 @@ function AuthorForm({ form, setLoad, setShowSpinner }: Props) {
         uppercase
         style={{ gridArea: 'submit' }}
       >
-        Continuar
+        Confirmar
       </Button>
       <Button
         color="green"
@@ -72,7 +72,7 @@ function AuthorForm({ form, setLoad, setShowSpinner }: Props) {
         style={{ gridArea: 'reset' }}
         onClick={() => form.reset()}
       >
-        Eliminar
+        Limpiar
       </Button>
       {error && (
         <Alert title="¡Error!" color="red" style={{ gridColumn: '1 / 3' }}>
