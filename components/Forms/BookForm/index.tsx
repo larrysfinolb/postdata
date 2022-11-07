@@ -11,18 +11,42 @@ import {
 import { DatePicker } from '@mantine/dates';
 import FileInput from 'components/FileInput';
 import React from 'react';
-import { deleteInDB, getLastInsert, insertInDB, updateInDB } from 'utils/db';
-import { getUrlFile, uploadFile } from 'utils/storage';
+import {
+  deleteInDB,
+  getAll,
+  getLastInsert,
+  insertInDB,
+  updateInDB,
+} from 'utils/db';
+import supabase from 'utils/supabase';
 
 type Props = {
-  data: any;
   setLoad: Function;
   form: any;
   setShowSpinner: Function;
 };
 
-function BookForm({ data, setLoad, form, setShowSpinner }: Props) {
+function BookForm({ setLoad, form, setShowSpinner }: Props) {
   const [error, setError] = React.useState('');
+
+  const [authors, setAuthors]: any = React.useState([]);
+  const [genres, setGenres]: any = React.useState([]);
+
+  React.useEffect(() => {
+    const getData = async () => {
+      setShowSpinner(true);
+
+      const resultAuthors = await getAll('authors');
+      const resultGenres = await getAll('genres');
+
+      if (resultAuthors.data) setAuthors(resultAuthors.data);
+      if (resultGenres.data) setGenres(resultGenres.data);
+
+      setShowSpinner(false);
+    };
+
+    getData();
+  }, []);
 
   return (
     <form
@@ -36,89 +60,100 @@ function BookForm({ data, setLoad, form, setShowSpinner }: Props) {
       onSubmit={form.onSubmit(async (values: any) => {
         let { id, authors_id, genres_id, cover_file, ...newValues } = values;
 
-        if (id) {
-          setShowSpinner(true);
+        setShowSpinner(true);
 
-          const resultCover: any = await uploadFile(
-            'covers',
-            newValues.title,
-            cover_file
-          );
-          if (resultCover.type === 'error') setError(resultCover.error);
+        try {
+          if (cover_file.name !== undefined) {
+            const fileName = `${newValues.title}.${
+              cover_file.name.split('.')[1]
+            }`
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '');
+            const resultCover = await supabase.storage
+              .from('covers')
+              .upload(fileName, cover_file, { upsert: true });
+            if (resultCover.error) throw resultCover.error.message;
 
-          newValues.cover_url = getUrlFile('covers', resultCover.data);
+            const urlCover = supabase.storage
+              .from('covers')
+              .getPublicUrl(resultCover.data.path);
+            newValues.cover_url = urlCover.data.publicUrl;
+          } else {
+            newValues.cover_url =
+              'https://efqndplvrwsimqbfyssn.supabase.co/storage/v1/object/sign/images/empty.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJpbWFnZXMvZW1wdHkucG5nIiwiaWF0IjoxNjY3MzIwODAwLCJleHAiOjE5ODI2ODA4MDB9.3x46rxQNM1JlPrBE3hjYc8hkW-r7GAyeZJt_g6n8j18';
+          }
 
-          const resultBook: any = await updateInDB('books', id, [newValues]);
-          if (resultBook) setError(resultBook);
+          if (id) {
+            // Delete authors of books
+            const resultDeleteAuthors: any = await deleteInDB(
+              'books_has_authors',
+              'books_id',
+              id
+            );
+            if (resultDeleteAuthors.error) {
+              throw resultDeleteAuthors.error;
+            }
 
-          const resultDeleteAuthors: any = await deleteInDB(
-            'books_has_authors',
-            'books_id',
-            id
-          );
-          if (resultDeleteAuthors) setError(resultDeleteAuthors);
-          await authors_id.map(async (item: any) => {
-            const result: any = await insertInDB('books_has_authors', [
-              { books_id: id, authors_id: item },
-            ]);
-            if (result) setError(result);
-          });
+            // Delete genres of books
+            const resultDeleteGenres: any = await deleteInDB(
+              'books_has_genres',
+              'books_id',
+              id
+            );
+            if (resultDeleteGenres.error) {
+              throw resultDeleteGenres.error;
+            }
 
-          const resultDeleteGenres: any = await deleteInDB(
-            'books_has_genres',
-            'books_id',
-            id
-          );
-          if (resultDeleteGenres) setError(resultDeleteGenres);
-          await genres_id.map(async (item: any) => {
-            const result: any = await insertInDB('books_has_genres', [
-              { books_id: id, genres_id: item },
-            ]);
-            if (result) setError(result);
-          });
+            // Update book
+            const resultBook: any = await updateInDB('books', id, [newValues]);
+            if (resultBook) {
+              throw resultBook;
+            }
+          } else {
+            // Insert book
+            const resultBooks: any = await insertInDB('books', [newValues]);
+            if (resultBooks) {
+              throw resultBooks;
+            }
 
-          form.reset();
-          setLoad(true);
-          setShowSpinner(false);
-        } else {
-          setShowSpinner(true);
-
-          const resultCover: any = await uploadFile(
-            'covers',
-            newValues.title,
-            cover_file
-          );
-          if (resultCover.type === 'error') setError(resultCover.error);
-
-          newValues.cover_url = getUrlFile('covers', resultCover.data);
-
-          const resultBooks: any = await insertInDB('books', [newValues]);
-          if (resultBooks) setError(resultBooks);
-
-          const resultSelect: any = await getLastInsert('books');
-          if (resultSelect.type === 'error') setError(resultSelect.error);
-
+            // Get last insert
+            let resultSelect: any = await supabase.from('books').select('id');
+            if (resultSelect.error) throw resultSelect.error.details;
+            resultSelect.data.sort((a: any, b: any) => a.id - b.id);
+            id = resultSelect.data[resultSelect.data.length - 1].id;
+          }
+          // Insert Authors of books
           const b_h_a = authors_id.map((item: any) => ({
-            books_id: resultSelect.data.id,
-            authors_id: item,
+            books_id: id,
+            authors_id: parseInt(item),
           }));
-          const resultAuthors: any = await insertInDB(
-            'books_has_authors',
-            b_h_a
-          );
-          if (resultAuthors) setError(resultAuthors);
+          const resultBooksHasAuthors = await supabase
+            .from('books_has_authors')
+            .insert(b_h_a);
+          if (resultBooksHasAuthors.error) {
+            throw resultBooksHasAuthors.error.details;
+          }
 
+          // Insert Genres of book
           const b_h_g = genres_id.map((item: any) => ({
-            books_id: resultSelect.data.id,
-            genres_id: item,
+            books_id: id,
+            genres_id: parseInt(item),
           }));
-          const resultGenres: any = await insertInDB('books_has_genres', b_h_g);
-          if (resultGenres) setError(resultGenres);
+          const resultBooksHasGenres = await supabase
+            .from('books_has_genres')
+            .insert(b_h_g);
+          if (resultBooksHasGenres.error) {
+            throw resultBooksHasGenres.error.details;
+          }
 
-          form.reset();
           setLoad(true);
-          setShowSpinner(false);
+          form.reset();
+        } catch (error: any) {
+          console.error(error);
+          setError(error);
         }
+
+        setShowSpinner(false);
       })}
     >
       <TextInput
@@ -158,7 +193,7 @@ function BookForm({ data, setLoad, form, setShowSpinner }: Props) {
         inputPropsUrl={form.getInputProps('cover_url')}
         inputPropsFile={form.getInputProps('cover_file')}
         label="Portada"
-        placeholder="Url de la imagen"
+        placeholder="Selecciona una imagen"
         title="Portada del libro"
       />
       <MultiSelect
@@ -167,9 +202,9 @@ function BookForm({ data, setLoad, form, setShowSpinner }: Props) {
         nothingFound="No se ha encontrado coincidencias"
         searchable
         withAsterisk
-        data={data.authors.map((item: any) => ({
-          value: item.id,
-          label: item.name,
+        data={authors.map((item: any) => ({
+          value: item.id.toString(),
+          label: item.name.toString(),
         }))}
         style={{ gridArea: 'authors' }}
         {...form.getInputProps('authors_id')}
@@ -180,9 +215,9 @@ function BookForm({ data, setLoad, form, setShowSpinner }: Props) {
         nothingFound="No se ha encontrado coincidencias"
         searchable
         withAsterisk
-        data={data.genres.map((item: any) => ({
-          value: item.id,
-          label: item.name,
+        data={genres.map((item: any) => ({
+          value: item.id.toString(),
+          label: item.name.toString(),
         }))}
         style={{ gridArea: 'genres' }}
         {...form.getInputProps('genres_id')}
@@ -234,7 +269,7 @@ function BookForm({ data, setLoad, form, setShowSpinner }: Props) {
       >
         Limpiar
       </Button>
-      {false && (
+      {error && (
         <Alert title="¡Error!" color="red" style={{ gridColumn: '1 / 3' }}>
           {error}
         </Alert>

@@ -14,6 +14,7 @@ type Props = {
   placeholder?: string;
   title?: string;
   style?: string;
+  withAsterisk?: boolean;
 };
 
 function FileInput({
@@ -23,6 +24,7 @@ function FileInput({
   title,
   placeholder,
   style,
+  withAsterisk,
 }: Props) {
   const [opened, setOpened] = React.useState(false);
 
@@ -32,7 +34,7 @@ function FileInput({
         label={label}
         placeholder={placeholder}
         style={style}
-        withAsterisk
+        withAsterisk={withAsterisk}
         readOnly
         onClick={() => setOpened(true)}
         {...inputPropsUrl}
@@ -53,8 +55,8 @@ function FileInput({
             alt={title}
           />
           <FileInputMantine
-            placeholder="Seleccione una imagen"
-            accept="image/png,image/jpeg"
+            label="Da click para buscar la imagen"
+            accept="image/png,image/jpeg,image/webp,image/gif"
             {...inputPropsFile}
           />
         </div>
