@@ -32,7 +32,12 @@ function signup() {
           }}
         >
           <SignupForm />
-          <div>aqui va el gif</div>
+          <picture>
+            <img
+              src="https://efqndplvrwsimqbfyssn.supabase.co/storage/v1/object/sign/images/admin-login-lottie.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJpbWFnZXMvYWRtaW4tbG9naW4tbG90dGllLnN2ZyIsImlhdCI6MTY2NjcxNDAxNSwiZXhwIjoxOTgyMDc0MDE1fQ.0d3A_8FzsCoSvWIXa0_VKf_wVw0hG6CfXB6bQf6asdI"
+              alt="Imagen Lottie que acompaña el inicio de sesión del panel de registrarse"
+            />
+          </picture>
         </div>
       </Container>
     </Layout>
