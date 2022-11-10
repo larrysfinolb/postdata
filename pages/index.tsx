@@ -79,18 +79,22 @@ const Home: NextPage = () => {
         <Divider size="sm" />
       </StyledContainer>
       <Group>
-        {genres?.map((genre) => (
-          <Link key={genre.name} href={`/books/genre/${genre.id}`}>
-            <StyledGenresText>{genre.name}</StyledGenresText>
-          </Link>
-        ))}
+        {genres
+          ?.filter((genre) => genre.active)
+          .map((genre) => (
+            <Link key={genre.name} href={`/books/genre/${genre.id}`}>
+              <StyledGenresText>{genre.name}</StyledGenresText>
+            </Link>
+          ))}
       </Group>
       <StyledSubTitle>Libros destacados</StyledSubTitle>
       <Divider size="sm" />
       <Group style={{ placeContent: 'center', gap: '0px' }}>
-        {books?.map((book) => (
-          <BookPreview key={book.id} {...book} />
-        ))}
+        {books
+          ?.filter((book) => book.active)
+          .map((book) => (
+            <BookPreview key={book.id} {...book} />
+          ))}
       </Group>
     </Layout>
   );
