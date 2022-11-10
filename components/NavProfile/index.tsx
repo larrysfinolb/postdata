@@ -5,6 +5,7 @@ import NavLink from 'components/NavLink';
 import supabase from 'utils/supabase';
 import styled from '@emotion/styled';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 const flexStyles: object = {
   display: 'flex',
@@ -92,7 +93,9 @@ function Index({}: Props) {
             <Text>{`Saldo: ${isLogin.balance}pdx`}</Text>
           </Menu.Item>
           <Menu.Item>
-            <Text style={{ cursor: 'pointer' }}>Comprar saldo</Text>
+            <Link href="/buy/balance" passHref style={{ cursor: 'pointer' }}>
+              <Text>Comprar saldo</Text>
+            </Link>
           </Menu.Item>
           <Menu.Divider />
           <Menu.Item>

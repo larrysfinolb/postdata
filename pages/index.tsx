@@ -9,6 +9,7 @@ import Link from 'next/link';
 import BookPreview from 'components/BookPreview';
 import supabase from 'utils/supabase';
 import React from 'react';
+import useBooks from 'hooks/useBooks';
 
 interface Props {
   primary?: boolean;
@@ -46,25 +47,29 @@ const StyledGenresText = styled.a`
 };*/
 
 const Home: NextPage = () => {
-  const [books, setBooks] = React.useState<Array<any> | null>([]);
   const [genres, setGenres] = React.useState<Array<any> | null>([]);
+  const [search, setSearch] = React.useState<string>('');
+  const { books } = useBooks(search);
 
   React.useEffect(() => {
-    const fetchBooks = async () => {
-      let { data, error } = await supabase.from('books').select('*');
-
-      setBooks(data);
-    };
     const fetchGenres = async () => {
       let { data, error } = await supabase.from('genres').select('*');
 
-      setGenres(data);
+      if (data) {
+        const dataFilter = data.filter((genre) => genre.active);
+
+        setGenres(dataFilter);
+      }
     };
     fetchGenres();
-    fetchBooks();
   }, []);
+
+  const handleSearch = (e: any, value: any) => {
+    e.preventDefault();
+    setSearch(value);
+  };
   return (
-    <Layout title="home" Header={<Header />}>
+    <Layout title="home" Header={<Header handleSearch={handleSearch} />}>
       <Heading order={1} styles={{ textAlign: 'center' }}>
         Librería Postdata
       </Heading>
@@ -79,22 +84,18 @@ const Home: NextPage = () => {
         <Divider size="sm" />
       </StyledContainer>
       <Group>
-        {genres
-          ?.filter((genre) => genre.active)
-          .map((genre) => (
-            <Link key={genre.name} href={`/books/genre/${genre.id}`}>
-              <StyledGenresText>{genre.name}</StyledGenresText>
-            </Link>
-          ))}
+        {genres?.map((genre) => (
+          <Link key={genre.name} href={`/books/genre/${genre.id}`}>
+            <StyledGenresText>{genre.name}</StyledGenresText>
+          </Link>
+        ))}
       </Group>
       <StyledSubTitle>Libros destacados</StyledSubTitle>
       <Divider size="sm" />
       <Group style={{ placeContent: 'center', gap: '0px' }}>
-        {books
-          ?.filter((book) => book.active)
-          .map((book) => (
-            <BookPreview key={book.id} {...book} />
-          ))}
+        {books?.map((book) => (
+          <BookPreview key={book.id} {...book} />
+        ))}
       </Group>
     </Layout>
   );

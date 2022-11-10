@@ -4,6 +4,8 @@ import Header from 'components/Header';
 import Link from 'components/NavLink';
 import { Search } from 'tabler-icons-react';
 import NavProfile from 'components/NavProfile';
+import supabase from 'utils/supabase';
+import useBooks from 'hooks/useBooks';
 
 const flexStyles: object = {
   display: 'flex',
@@ -15,9 +17,14 @@ const flexStyles: object = {
 
 type Props = {
   innerPadding?: number;
+  handleSearch?: any;
 };
 
-function index({ innerPadding = 8 }: Props) {
+function Index({ innerPadding = 8, handleSearch }: Props) {
+  const [search, setSearch] = React.useState<string>('');
+  const ref = React.useRef<any>(null);
+  const { books } = useBooks(search);
+
   return (
     <Header>
       <Group
@@ -64,10 +71,14 @@ function index({ innerPadding = 8 }: Props) {
               width: '100%',
               minWidth: '400px',
             }}
+            onSubmit={(e) => {
+              handleSearch(e, ref.current.value);
+            }}
           >
             <Autocomplete
               icon={<Search />}
-              data={['Book1', 'Book2', 'Book3']}
+              data={books?.map((book) => book.title) || []}
+              ref={ref}
               transition="fade"
               transitionDuration={80}
               transitionTimingFunction="ease"
@@ -91,4 +102,4 @@ function index({ innerPadding = 8 }: Props) {
   );
 }
 
-export default index;
+export default Index;
