@@ -93,9 +93,11 @@ const Home: NextPage = () => {
       <StyledSubTitle>Libros destacados</StyledSubTitle>
       <Divider size="sm" />
       <Group style={{ placeContent: 'center', gap: '0px' }}>
-        {books?.map((book) => (
-          <BookPreview key={book.id} {...book} />
-        ))}
+        {books
+          ?.filter((book, index) => index < 8)
+          .map((book) => (
+            <BookPreview key={book.id} {...book} />
+          ))}
       </Group>
     </Layout>
   );

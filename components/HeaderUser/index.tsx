@@ -54,7 +54,7 @@ function Index({ innerPadding = 8, handleSearch }: Props) {
               <Link url="/books">Libros</Link>
             </li>
             <li>
-              <Link url="/faq">FAQ</Link>
+              <Link url="/ayuda">Ayuda</Link>
             </li>
           </ul>
         </nav>

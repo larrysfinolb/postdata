@@ -12,6 +12,7 @@ function useBooks(search: string) {
         const dataFilter = data.filter(
           (book) =>
             book.active &&
+            book.copies > 0 &&
             book.title.toLowerCase().indexOf(search.toLowerCase()) > -1
         );
 
