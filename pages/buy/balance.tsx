@@ -4,11 +4,12 @@ import Layout from 'components/Layout';
 import Header from 'components/HeaderUser';
 import Heading from 'components/Heading';
 import supabase from 'utils/supabase';
-import { Text, Button, Stack, NumberInput } from '@mantine/core';
+import { Text, Button, Stack, NumberInput, Select } from '@mantine/core';
 import styled from '@emotion/styled';
 import colors from 'utils/colors';
 import { useForm } from '@mantine/form';
 import { FileInput } from '@mantine/core';
+import Loader from 'components/Loader';
 
 const BsToPDX = 3;
 
@@ -23,38 +24,78 @@ const StyledContainer = styled.div`
   padding: 10px;
   border-radius: 6px;
 `;
+const StyledList = styled.ul`
+  margin: auto;
+  width: 500px;
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 6px;
+  list-style: none;
+`;
 
 type Props = {};
 
 function Balance({}: Props) {
   const router = useRouter();
   const [balance, setBalance] = React.useState<any>(null);
+  const [isLoading, setLoading] = React.useState<any>(true);
   const [user, setUser] = React.useState<any>(null);
+  const [banks, setBanks] = React.useState<any>(null);
+  const [valueBank, setValueBank] = React.useState<string | null>(null);
+  const pdxInput = React.useRef<any>(null);
 
   React.useEffect(() => {
     const getUser = async () => {
+      setLoading(true);
       const { data, error } = await supabase.auth.getUser();
       error && router.push('/login');
       setUser(data);
-      console.log(data);
+    };
+    const getBanks = async () => {
+      let { data: banksData, error } = await supabase
+        .from('banks')
+        .select('id,name,account_number')
+        .eq('active', true);
+
+      setBanks(banksData);
+      setLoading(false);
     };
     getUser();
+    getBanks();
   }, []);
 
-  const handleChange = (e: any) => {
-    const number = Number(e.target.value.split(' ')[1]);
-    console.log(number);
-    setBalance(number * BsToPDX);
-  };
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      let number;
+      if (pdxInput?.current) {
+        number = Number(pdxInput.current.value.split(' ')[1]);
+      } else {
+        number = 0;
+      }
+      setBalance(number * BsToPDX);
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const form = useForm({
     initialValues: {
-      payment_file: {},
+      payment_file: null,
+      amount: '$ 0.0',
+      bank: null,
+    },
+
+    validate: {
+      payment_file: (value) => (value ? null : 'Selecciona una imagen'),
+      amount: (value) =>
+        Number(value) > 0 ? null : 'El pago debe ser mayor a 0',
+      bank: (value) => (value ? null : 'Selecciona un banco'),
     },
   });
 
   return (
     <Layout Header={<Header />}>
+      <Loader show={isLoading} />
       <Heading order={1} styles={{ textAlign: 'center' }}>
         Comprar saldo
       </Heading>
@@ -64,9 +105,32 @@ function Balance({}: Props) {
         <br />
         Si el saldo no se ha reflejado en el transcurso de 72 horas
         probablemente se haya rechazado.
-        <br />
-        Número de cuenta: 02374826732533951051
       </Text>
+      <Heading
+        order={2}
+        size="h3"
+        styles={{ textAlign: 'center', marginTop: '30px' }}
+      >
+        Cuentas
+      </Heading>
+      <StyledList>
+        {banks?.map((bank: any) => {
+          return (
+            <li
+              key={bank.id}
+              style={{
+                listStyle: 'none',
+                textAlign: 'center',
+                marginBottom: '10px',
+              }}
+            >
+              <Text size={18}>
+                <ColoredText>{bank.name}</ColoredText>: {bank.account_number}
+              </Text>
+            </li>
+          );
+        })}
+      </StyledList>
       <StyledContainer>
         <form
           onSubmit={form.onSubmit(async ({ payment_file }: any) => {
@@ -84,23 +148,17 @@ function Balance({}: Props) {
                 .from('payments')
                 .getPublicUrl(resultImage.data.path);
 
-              const { data: clients, error: clientsError } = await supabase
-                .from('clients')
-                .select('id')
-                .eq('email', user.email);
+              const { data, error } = await supabase.from('payments').insert([
+                {
+                  clients_email: user.user.email,
+                  banks_id: valueBank,
+                  amount: balance,
+                  voucher_url: urlPayment.data.publicUrl,
+                },
+              ]);
 
-              if (!clientsError) {
-                const { data, error } = await supabase.from('payments').insert([
-                  {
-                    clients_id: clients[0],
-                    amount: balance,
-                    voucher_url: urlPayment,
-                  },
-                ]);
-
-                if (!error) {
-                  router.push('/payment-validate');
-                }
+              if (!error) {
+                router.push('/payment-validate');
               }
             }
           })}
@@ -108,12 +166,11 @@ function Balance({}: Props) {
           <Stack>
             <NumberInput
               label="Saldo (PDX) a comprar"
+              withAsterisk
               precision={2}
               min={0}
               defaultValue={0}
-              onChange={(e) => handleChange(e)}
-              onInput={(e) => handleChange(e)}
-              onClick={(e) => handleChange(e)}
+              ref={pdxInput}
               parser={(value: any) => value.replace(/\$\s?|(,*)/g, '')}
               {...form.getInputProps('amount')}
               formatter={(value: any) =>
@@ -125,6 +182,7 @@ function Balance({}: Props) {
             <NumberInput
               label="Cantidad a pagar en bolivares"
               readOnly
+              variant="filled"
               hideControls
               precision={2}
               min={0}
@@ -137,6 +195,23 @@ function Balance({}: Props) {
                   : 'Bs. '
               }
             />
+            {banks && (
+              <Select
+                label="Banco"
+                withAsterisk
+                placeholder="Provincial"
+                data={banks?.map((bank: any) => {
+                  return {
+                    value: bank.id,
+                    label: `${bank.name}: ${bank.account_number}`,
+                  };
+                })}
+                value={valueBank}
+                onChange={setValueBank}
+                {...form.getInputProps('bank')}
+                required
+              />
+            )}
             <FileInput
               label="Transferencia"
               placeholder="Selecciona una imagen"

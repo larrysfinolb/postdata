@@ -16,7 +16,7 @@ function PaymentValidate({}: Props) {
       withCloseButton={false}
       title="Tu pago fue enviado"
     >
-      <Link href="/login" passHref>
+      <Link href="/" passHref>
         <Button color="green" variant="outline" fullWidth component="a">
           Ir a inicio
         </Button>
