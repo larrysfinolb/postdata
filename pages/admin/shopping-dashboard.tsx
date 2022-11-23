@@ -19,18 +19,20 @@ function ShoppingDashboard({}: Props) {
   const [showSpinner, setShowSpinner] = React.useState(false);
   const [data, setData] = React.useState([]);
 
-  const { result, setSearch } = useSearcher(data, [
-    'id',
-    'clients_id',
-    'books_id',
-  ]);
+  const [books, setBooks] = React.useState([]);
+
+  const { result, setSearch } = useSearcher(data, ['id']);
 
   React.useEffect(() => {
     if (load) {
       const getData = async () => {
         setShowSpinner(true);
-        const result: any = getAll('shoppings');
+        const result: any = await getAll('shoppings');
         if (result.data) setData(result.data);
+
+        const resultBooks: any = await getAll('books');
+        if (resultBooks) setBooks(resultBooks.data);
+
         setLoad(false);
         setShowSpinner(false);
       };
@@ -48,7 +50,7 @@ function ShoppingDashboard({}: Props) {
     },
     validate: {
       client: (value) =>
-        REGEX.name.test(value) ? null : 'Formato de cliente invalido.',
+        REGEX.email.test(value) ? null : 'Formato de cliente invalido.',
       book: (value) =>
         REGEX.title.test(value) ? null : 'Formato de libro invalido.',
     },
@@ -59,11 +61,7 @@ function ShoppingDashboard({}: Props) {
       <Loader show={showSpinner} />
       <Layout title="Panel de compras" Header={<HeaderAdmin />}>
         <Section>
-          <Title
-            order={1}
-            transform="uppercase"
-            style={{ gridColumn: '1 / 3' }}
-          >
+          <Title order={1} style={{ gridColumn: '1 / 3' }}>
             Panel de compras
           </Title>
           <Container>
@@ -84,17 +82,26 @@ function ShoppingDashboard({}: Props) {
                 {result.map((item: any) => (
                   <tr
                     key={item.id}
-                    onClick={() =>
+                    onClick={() => {
+                      const book: any = books.filter(
+                        (book: any) => book.id === item.books_id
+                      );
+
                       form.setValues({
                         id: item.id,
-                        client: item.clients_id,
-                        book: item.books_id,
-                      })
-                    }
+                        client: item.email,
+                        book: book[0].title,
+                        active: item.active,
+                      });
+                    }}
                   >
                     <td>{item.id}</td>
-                    <td>{item.client}</td>
-                    <td>{item.book}</td>
+                    <td>{item.email}</td>
+                    <td>
+                      {books.map((book: any) => {
+                        if (book.id === item.books_id) return book.title;
+                      })}
+                    </td>
                   </tr>
                 ))}
               </tbody>

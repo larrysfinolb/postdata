@@ -17,18 +17,21 @@ function PaymentDashboard() {
   const [showSpinner, setShowSpinner] = React.useState(false);
   const [data, setData] = React.useState([]);
 
-  const { result, setSearch } = useSearcher(data, [
-    'id',
-    'clients_id',
-    'active',
-  ]);
+  const [banks, setBanks] = React.useState([]);
+
+  const { result, setSearch } = useSearcher(data, ['id']);
 
   React.useEffect(() => {
     if (load) {
       const getData = async () => {
         setShowSpinner(true);
-        const result: any = getAll('payments');
+
+        const result: any = await getAll('payments');
         if (result.data) setData(result.data);
+
+        const resultBanks: any = await getAll('banks');
+        if (resultBanks.data) setBanks(resultBanks.data);
+
         setLoad(false);
         setShowSpinner(false);
       };
@@ -44,17 +47,21 @@ function PaymentDashboard() {
       client: '',
       bank: '',
       voucher: '',
+      status: 'P',
       active: false,
+      statusInitial: '',
     },
 
     validate: {
       amount: (value) =>
         REGEX.price.test(value) ? null : 'Formato del monto invalido.',
       client: (value) =>
-        REGEX.name.test(value) ? null : 'Formato del cliente invalido.',
+        REGEX.email.test(value) ? null : 'Formato del cliente invalido.',
       bank: (value) =>
         REGEX.name.test(value) ? null : 'Formato del banco invalido.',
       voucher: (value) => (value ? null : 'Selecciona el comprobante de pago'),
+      status: (value) =>
+        /^(P|A|R){1,1}$/.test(value) ? null : 'Formato de estatus invalido.',
     },
   });
 
@@ -84,20 +91,31 @@ function PaymentDashboard() {
                 {result.map((item: any) => (
                   <tr
                     key={item.id}
-                    onClick={() =>
+                    onClick={() => {
+                      const bank: any = banks.filter(
+                        (b: any) => b.id === item.banks_id
+                      )[0];
                       form.setValues({
                         id: item.id,
                         amount: item.amount,
-                        client: item.clinets_id,
-                        bank: item.banks_id,
+                        client: item.clients_email,
+                        bank: bank.name,
                         voucher: item.voucher_url,
                         active: item.active,
-                      })
-                    }
+                        status: item.status,
+                        statusInitial: item.status,
+                      });
+                    }}
                   >
                     <td>{item.id}</td>
-                    <td>{item.clients_id}</td>
-                    <td>{item.active ? 'Activado' : 'Desactivado'}</td>
+                    <td>{item.clients_email}</td>
+                    <td>
+                      {item.status === 'P'
+                        ? 'Pendiente'
+                        : item.status === 'A'
+                        ? 'Aprobado'
+                        : 'Rechazado'}
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -17,7 +17,7 @@ function GenreDashboard() {
   const [showSpinner, setShowSpinner] = React.useState(false);
   const [data, setData] = React.useState([]);
 
-  const { result, setSearch } = useSearcher(data, ['id', 'name', 'active']);
+  const { result, setSearch } = useSearcher(data, ['name']);
 
   React.useEffect(() => {
     if (load) {
@@ -51,7 +51,7 @@ function GenreDashboard() {
       <Layout title="Panel de clientes" Header={<HeaderAdmin />}>
         <Section>
           <Title order={1} style={{ gridColumn: '1 / 3' }}>
-            Panel de Autores
+            Panel de géneros
           </Title>
           <Container>
             <TextInput

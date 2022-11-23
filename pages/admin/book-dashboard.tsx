@@ -19,7 +19,7 @@ function ClientDashboard() {
   const [books_has_authors, setBooks_has_authors]: any = React.useState([]);
   const [books_has_genres, setBooks_has_genres]: any = React.useState([]);
 
-  const { result, setSearch } = useSearcher(books, ['id', 'title', 'language']);
+  const { result, setSearch } = useSearcher(books, ['id', 'title']);
 
   React.useEffect(() => {
     if (load) {
@@ -80,7 +80,7 @@ function ClientDashboard() {
       <Loader show={showSpinner} />
       <Section>
         <Title order={1} style={{ gridColumn: '1 / 3' }}>
-          Panel de Libros
+          Panel de libros
         </Title>
         <Container>
           <TextInput

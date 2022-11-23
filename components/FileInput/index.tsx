@@ -13,9 +13,10 @@ type Props = {
   label?: string;
   placeholder?: string;
   title?: string;
-  style?: string;
+  style?: Object;
   withAsterisk?: boolean;
   isBuying?: boolean;
+  readonly?: boolean;
 };
 
 function FileInput({
@@ -27,6 +28,7 @@ function FileInput({
   style,
   withAsterisk,
   isBuying,
+  readonly,
 }: Props) {
   const [opened, setOpened] = React.useState(false);
 
@@ -58,11 +60,13 @@ function FileInput({
               alt={title}
             />
           )}
-          <FileInputMantine
-            label="Da click para buscar la imagen"
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            {...inputPropsFile}
-          />
+          {!readonly && (
+            <FileInputMantine
+              label="Da click para buscar la imagen"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              {...inputPropsFile}
+            />
+          )}
         </div>
       </Modal>
     </>

@@ -19,11 +19,13 @@ function ShoppingForm({ form, setLoad, setShowSpinner }: Props) {
 
         setShowSpinner(true);
 
-        const result: any = await updateInDB('shoppings', id, newValues);
+        const result: any = await updateInDB('shoppings', id, {
+          active: newValues.active,
+        });
         if (result) setError(result);
 
         form.reset();
-        setLoad();
+        setLoad(true);
         setShowSpinner(false);
       })}
       style={{

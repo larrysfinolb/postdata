@@ -39,8 +39,14 @@ function BookForm({ setLoad, form, setShowSpinner }: Props) {
       const resultAuthors = await getAll('authors');
       const resultGenres = await getAll('genres');
 
-      if (resultAuthors.data) setAuthors(resultAuthors.data);
-      if (resultGenres.data) setGenres(resultGenres.data);
+      if (resultAuthors.data)
+        setAuthors(
+          resultAuthors.data.filter((item: any) => item.active === true)
+        );
+      if (resultGenres.data)
+        setGenres(
+          resultGenres.data.filter((item: any) => item.active === true)
+        );
 
       setShowSpinner(false);
     };
@@ -79,8 +85,7 @@ function BookForm({ setLoad, form, setShowSpinner }: Props) {
               .getPublicUrl(resultCover.data.path);
             newValues.cover_url = urlCover.data.publicUrl;
           } else {
-            newValues.cover_url =
-              'https://efqndplvrwsimqbfyssn.supabase.co/storage/v1/object/sign/images/empty.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJpbWFnZXMvZW1wdHkucG5nIiwiaWF0IjoxNjY3MzIwODAwLCJleHAiOjE5ODI2ODA4MDB9.3x46rxQNM1JlPrBE3hjYc8hkW-r7GAyeZJt_g6n8j18';
+            delete newValues.cover_url;
           }
 
           if (id) {

@@ -19,11 +19,7 @@ function BankdDashboard({}: Props) {
   const [showSpinner, setShowSpinner] = React.useState(false);
   const [data, setData] = React.useState([]);
 
-  const { result, setSearch } = useSearcher(data, [
-    'id',
-    'name',
-    'account_number',
-  ]);
+  const { result, setSearch } = useSearcher(data, ['id']);
 
   React.useEffect(() => {
     if (load) {

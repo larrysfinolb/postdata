@@ -6,8 +6,10 @@ import {
   Radio,
   TextInput,
 } from '@mantine/core';
+import FileInput from 'components/FileInput';
 import React from 'react';
-import { updateInDB } from 'utils/db';
+import pdxtobs from 'utils/pdxTObs';
+import supabase from 'utils/supabase';
 
 type Props = {
   form: any;
@@ -16,21 +18,47 @@ type Props = {
 };
 
 function PaymentForm({ form, setLoad, setShowSpinner }: Props) {
-  const [status, setStatus] = React.useState('');
   const [error, setError] = React.useState('');
 
   return (
     <form
       onSubmit={form.onSubmit(async (values: any) => {
-        const { id, ...newValues } = values;
+        const { id, status, statusInitial, amount, client, ...newValues } =
+          values;
 
         setShowSpinner(true);
 
-        const result: any = updateInDB('payments', id, newValues);
-        if (result) setError(result);
+        if (statusInitial === 'P') {
+          if (status === 'A') {
+            let { data: dataGetBalance, error: errorGetBalance }: any =
+              await supabase
+                .from('clients')
+                .select('balance')
+                .eq('email', client);
+            if (errorGetBalance) setError(errorGetBalance.message);
+
+            let { error: errorUpdateBalance } = await supabase
+              .from('clients')
+              .update({ balance: dataGetBalance[0].balance + amount / pdxtobs })
+              .eq('email', client);
+            if (errorUpdateBalance) setError(errorUpdateBalance.message);
+          }
+
+          let { error: errorUpdatePayment } = await supabase
+            .from('payments')
+            .update({ status, active: newValues.active })
+            .eq('id', id);
+          if (errorUpdatePayment) setError(errorUpdatePayment.message);
+        } else {
+          let { error: errorUpdatePayment } = await supabase
+            .from('payments')
+            .update({ active: newValues.active })
+            .eq('id', id);
+          if (errorUpdatePayment) setError(errorUpdatePayment.message);
+        }
 
         form.reset();
-        setLoad();
+        setLoad(true);
         setShowSpinner(false);
       })}
       style={{
@@ -75,22 +103,39 @@ function PaymentForm({ form, setLoad, setShowSpinner }: Props) {
         style={{ gridArea: 'bank' }}
         {...form.getInputProps('bank')}
       />
-      <TextInput
-        label="voucher"
-        placeholder="Tu no debes de llenar este campo."
+      <FileInput
         withAsterisk
-        disabled
+        readonly
+        inputPropsUrl={form.getInputProps('voucher')}
+        label="Comprobante"
+        title="Comprobante del pago"
         style={{ gridArea: 'voucher' }}
-        {...form.getInputProps('voucher')}
       />
       <Radio.Group
-        value={status}
-        onChange={setStatus}
+        name="status"
+        label="Estatus"
+        withAsterisk
         style={{ gridArea: 'status' }}
+        {...form.getInputProps('status')}
       >
-        <Radio checked color="yellow" value="P" label="Pendiente" />
-        <Radio color="yellow" value="A" label="Aceptada" />
-        <Radio color="yellow" value="R" label="Rechazada" />
+        <Radio
+          color="yellow"
+          value="P"
+          label="Pendiente"
+          disabled={form.getInputProps('status').value !== 'P'}
+        />
+        <Radio
+          color="yellow"
+          value="A"
+          label="Aceptada"
+          disabled={form.getInputProps('status').value !== 'P'}
+        />
+        <Radio
+          color="yellow"
+          value="R"
+          label="Rechazada"
+          disabled={form.getInputProps('status').value !== 'P'}
+        />
       </Radio.Group>
       <Checkbox
         color="yellow"

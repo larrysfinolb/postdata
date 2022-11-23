@@ -33,7 +33,7 @@ function ClientDashboard({}: Props) {
   const { result, setSearch } = useSearcher(data, [
     'first_name',
     'last_name',
-    'gender',
+    'email',
   ]);
 
   React.useEffect(() => {
@@ -134,14 +134,14 @@ function ClientDashboard({}: Props) {
               gap: '1rem',
             }}
             onSubmit={form.onSubmit(async (values: any) => {
-              const { id, ...newValues } = values;
+              const { id, email, ...newValues } = values;
 
               setShowSpinner(true);
 
               try {
                 const result: any = await supabase
                   .from('clients')
-                  .update({ active: newValues.active })
+                  .update(newValues)
                   .eq('id', id);
 
                 if (result.error) throw result.error.details;
@@ -176,7 +176,6 @@ function ClientDashboard({}: Props) {
               placeholder="Ejemplo"
               label="Nombre"
               withAsterisk
-              disabled
               style={{ gridArea: 'first_name' }}
               {...form.getInputProps('first_name')}
             />
@@ -185,7 +184,6 @@ function ClientDashboard({}: Props) {
               placeholder="de Nombre"
               label="Apellido"
               withAsterisk
-              disabled
               style={{ gridArea: 'last_name' }}
               {...form.getInputProps('last_name')}
             />
@@ -193,7 +191,6 @@ function ClientDashboard({}: Props) {
               label="Fecha de nacimiento"
               placeholder="Selecciona una fecha"
               style={{ gridArea: 'birthday' }}
-              disabled
               withAsterisk
               {...form.getInputProps('birthday')}
             />
@@ -204,7 +201,6 @@ function ClientDashboard({}: Props) {
               min={0}
               step={0.01}
               precision={2}
-              disabled
               withAsterisk
               style={{ gridArea: 'balance' }}
               {...form.getInputProps('balance')}
@@ -216,9 +212,9 @@ function ClientDashboard({}: Props) {
               style={{ gridArea: 'gender' }}
               {...form.getInputProps('gender')}
             >
-              <Radio color="yellow" value="H" label="Masculino" disabled />
-              <Radio color="yellow" value="F" label="Femenino" disabled />
-              <Radio color="yellow" value="O" label="Otros" disabled />
+              <Radio color="yellow" value="H" label="Hombre" />
+              <Radio color="yellow" value="M" label="Mujer" />
+              <Radio color="yellow" value="O" label="Otros" />
             </Radio.Group>
             <Checkbox
               color="yellow"
@@ -242,7 +238,7 @@ function ClientDashboard({}: Props) {
               style={{ gridArea: 'reset' }}
               onClick={() => form.reset()}
             >
-              Eliminar
+              Limpiar
             </Button>
             {error && (
               <Alert
