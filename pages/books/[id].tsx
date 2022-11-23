@@ -53,7 +53,9 @@ type Book = {
 };
 
 function Book() {
-  const [book, setBook] = React.useState(data);
+  const [book, setBook] = React.useState<any>([]);
+  const [genres, setGenres] = React.useState<any>([]);
+  const [authors, setAuthors] = React.useState<any>([]);
   const [isLoading, setLoading] = React.useState(true);
 
   const router = useRouter();
@@ -61,18 +63,60 @@ function Book() {
 
   React.useEffect(() => {
     const getBook = async () => {
-      const { data, error } = await supabase
+      const { data: bookData, error } = await supabase
         .from('books')
         .select('*')
         .eq('id', id);
 
-      if (data) {
-        setBook(data[0]);
-        setLoading(false);
-        console.log(data[0]);
-      }
+      if (bookData) {
+        //generos
+        const { data: books_has_genres, error: errorBooks_has_genres } =
+          await supabase
+            .from('books_has_genres')
+            .select('genres_id')
+            .eq('books_id', bookData[0].id);
 
-      error && alert(error);
+        const { data: genresData, error: errorGenres } = await supabase
+          .from('genres')
+          .select('*');
+
+        const books_has_genresFilter = books_has_genres?.map(
+          (idGenre) => idGenre.genres_id
+        );
+        const filterGenres = genresData
+          ?.filter((thisGenres) =>
+            books_has_genresFilter?.includes(thisGenres.id)
+          )
+          .map((thisGenres) => thisGenres.name);
+
+        //autores
+        const { data: books_has_authors, error: errorBooks_has_authors } =
+          await supabase
+            .from('books_has_authors')
+            .select('authors_id')
+            .eq('books_id', bookData[0].id);
+
+        const { data: authorsData, error: errorAuthors } = await supabase
+          .from('authors')
+          .select('*');
+
+        const books_has_authorsFilter = books_has_authors?.map(
+          (authorsID: any) => {
+            return authorsID.authors_id;
+          }
+        );
+
+        const filterAuthors = authorsData
+          ?.filter((thisAuthor) =>
+            books_has_authorsFilter?.includes(thisAuthor.id)
+          )
+          .map((thisAuthor) => thisAuthor.name);
+
+        setBook(bookData[0]);
+        setGenres(filterGenres);
+        setAuthors(filterAuthors);
+        setLoading(false);
+      }
     };
     getBook();
   }, [id]);
@@ -114,9 +158,9 @@ function Book() {
                 />
               </div>
 
-              <Text style={stylesPrice}>{`${book.price} BC`}</Text>
+              <Text style={stylesPrice}>{`${book.price} PDX`}</Text>
 
-              <Button color="yellow" type="button">
+              <Button color="yellow" type="button" fullWidth>
                 Comprar
               </Button>
             </div>
@@ -126,10 +170,15 @@ function Book() {
               <div style={stylesContainer}>
                 <div>
                   <Heading order={1}>{book.title}</Heading>
-                  <p style={styleAuthor}>{book.author}</p>
+                  {authors.map((author: any, index: any) => {
+                    return (
+                      <p key={index} style={styleAuthor}>
+                        {author}
+                      </p>
+                    );
+                  })}
                 </div>
-
-                {/*<ListBadges>{book.genders}</ListBadges>*/}
+                <ListBadges>{genres}</ListBadges>
               </div>
 
               <article style={stylesContainer}>

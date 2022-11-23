@@ -90,6 +90,15 @@ function Index({}: Props) {
         <Menu.Dropdown>
           <Menu.Label>Cuenta</Menu.Label>
           <Menu.Item>
+            <Link
+              href="/shopping-history"
+              passHref
+              style={{ cursor: 'pointer' }}
+            >
+              <Text>Historial</Text>
+            </Link>
+          </Menu.Item>
+          <Menu.Item>
             <Text>{`Saldo: ${isLogin.balance}pdx`}</Text>
           </Menu.Item>
           <Menu.Item>

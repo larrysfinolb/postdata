@@ -26,14 +26,25 @@ function GenrePage() {
 
   React.useEffect(() => {
     const getBook = async () => {
-      const { data: booksData, error } = await supabase
-        .from('books')
-        .select('*, books_has_genres(genres_id)')
-        .eq('books_has_genres (genres_id)', gid);
+      let { data: genresBooks, error } = await supabase
+        .from('books_has_genres')
+        .select('books_id')
+        .eq('genres_id', gid);
 
-      if (booksData) {
-        console.log(booksData);
-        setBooks(booksData);
+      let { data: booksData, error: bookError } = await supabase
+        .from('books')
+        .select('*');
+
+      console.log(genresBooks, booksData);
+
+      const genresBooksFilter = genresBooks?.map((idGenre) => idGenre.books_id);
+
+      const filterData = booksData?.filter((bookData) =>
+        genresBooksFilter?.includes(bookData.id)
+      );
+
+      if (filterData) {
+        setBooks(filterData);
       }
     };
     getBook();
@@ -47,11 +58,13 @@ function GenrePage() {
 
       <StyledSubTitle>Todos los libros disponibles</StyledSubTitle>
       <Divider size="sm" />
-      <Group style={{ placeContent: 'center', gap: '0px' }}>
-        {books?.map((book: any) => (
-          <BookPreview key={book.id} {...book} />
-        ))}
-      </Group>
+      {books && (
+        <Group style={{ placeContent: 'center', gap: '0px' }}>
+          {books?.map((book: any) => (
+            <BookPreview key={book.id} {...book} />
+          ))}
+        </Group>
+      )}
     </Layout>
   );
 }

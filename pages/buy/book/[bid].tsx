@@ -77,6 +77,12 @@ function BuyBook({}: Props) {
         .update({ copies: book.copies - 1 })
         .eq('id', book.id);
 
+      const { data: insertShopping, error: errorShopping } = await supabase
+        .from('shoppings')
+        .insert([{ books_id: book.id, email: user.email }]);
+
+      console.log(errorShopping);
+
       setError('Gracias por su compra');
     }
 

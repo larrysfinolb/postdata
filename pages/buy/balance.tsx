@@ -10,8 +10,7 @@ import colors from 'utils/colors';
 import { useForm } from '@mantine/form';
 import { FileInput } from '@mantine/core';
 import Loader from 'components/Loader';
-
-const BsToPDX = 3;
+import pdxtobs from 'utils/pdxTObs';
 
 const ColoredText = styled.span`
   color: ${colors.green};
@@ -40,7 +39,7 @@ function Balance({}: Props) {
   const [balance, setBalance] = React.useState<any>(null);
   const [isLoading, setLoading] = React.useState<any>(true);
   const [user, setUser] = React.useState<any>(null);
-  const [banks, setBanks] = React.useState<any>(null);
+  const [banks, setBanks] = React.useState<any>([]);
   const [valueBank, setValueBank] = React.useState<string | null>(null);
   const pdxInput = React.useRef<any>(null);
 
@@ -72,7 +71,7 @@ function Balance({}: Props) {
       } else {
         number = 0;
       }
-      setBalance(number * BsToPDX);
+      setBalance(number * pdxtobs);
     }, 500);
 
     return () => clearInterval(interval);
@@ -133,7 +132,7 @@ function Balance({}: Props) {
       </StyledList>
       <StyledContainer>
         <form
-          onSubmit={form.onSubmit(async ({ payment_file }: any) => {
+          onSubmit={form.onSubmit(async ({ payment_file, bank }: any) => {
             const fileName = `${payment_file.name}`
               .normalize('NFD')
               .replace(/[\u0300-\u036f]/g, '');
@@ -151,7 +150,7 @@ function Balance({}: Props) {
               const { data, error } = await supabase.from('payments').insert([
                 {
                   clients_email: user.user.email,
-                  banks_id: valueBank,
+                  banks_id: bank,
                   amount: balance,
                   voucher_url: urlPayment.data.publicUrl,
                 },

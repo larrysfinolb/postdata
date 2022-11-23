@@ -19,8 +19,6 @@ function ListBadges({ children }: Props) {
     backgroundColor: theme.colors.customGreen[0],
   };
 
-  console.log(children);
-
   return (
     <ul style={stylesUl}>
       {children.map((badge, index) => (
