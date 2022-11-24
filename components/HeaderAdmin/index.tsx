@@ -1,5 +1,5 @@
 import React from 'react';
-import { Group } from '@mantine/core';
+import { Group, Menu, Text } from '@mantine/core';
 import Header from 'components/Header';
 import Link from 'components/NavLink';
 import styled from '@emotion/styled';
@@ -80,7 +80,39 @@ function HeaderAdmin({ innerPadding = 8 }: Props) {
               <Link url="/admin/shopping-dashboard">Compras</Link>
             </li>
             <li>
-              <Link url="#">Ayuda</Link>
+              <Menu>
+                <Menu.Target>
+                  <Text
+                    variant="link"
+                    style={{
+                      color: 'white',
+                      cursor: 'pointer',
+                      fontFamily: 'Work Sans, Segoe UI',
+                      fontSize: '1.2rem',
+                      fontWeight: '700',
+                    }}
+                  >
+                    Ayuda
+                  </Text>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item
+                    component="a"
+                    href="https://efqndplvrwsimqbfyssn.supabase.co/storage/v1/object/public/manuales/Postdata%20-%20Manual%20del%20Analista.pdf?t=2022-11-24T06%3A36%3A03.832Z"
+                    target="_blank"
+                  >
+                    Manual del Analista
+                  </Menu.Item>
+
+                  <Menu.Item
+                    component="a"
+                    href="https://efqndplvrwsimqbfyssn.supabase.co/storage/v1/object/public/manuales/Postdata%20-%20Manual%20del%20Usuario.pdf?t=2022-11-24T06%3A36%3A11.161Z"
+                    target="_blank"
+                  >
+                    Manual del Usuario
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
             </li>
             <li>
               <ButtonLink
