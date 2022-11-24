@@ -54,7 +54,12 @@ function Index({ innerPadding = 8, handleSearch }: Props) {
               <Link url="/books">Libros</Link>
             </li>
             <li>
-              <Link url="/ayuda">Ayuda</Link>
+              <Link
+                url="https://efqndplvrwsimqbfyssn.supabase.co/storage/v1/object/public/manuales/Postdata%20-%20Manual%20del%20Usuario.pdf?t=2022-11-24T06%3A36%3A11.161Z"
+                blank
+              >
+                Ayuda
+              </Link>
             </li>
           </ul>
         </nav>
