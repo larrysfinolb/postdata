@@ -80,7 +80,11 @@ function Index({}: Props) {
         if (!error) {
           router.push('/');
         } else {
-          alert('Hubo un error: ' + error);
+          if (error.toString() == 'AuthApiError: Invalid login credentials') {
+            alert('Correo o contraseña incorrectos');
+          } else {
+            alert('Hubo un error: ' + error);
+          }
         }
       })}
       style={{

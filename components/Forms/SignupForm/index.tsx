@@ -23,6 +23,7 @@ function Index({}: Props) {
   const theme: MantineTheme = useMantineTheme();
 
   const [gender, setGender] = useState('H');
+  const [error, setError] = useState('');
 
   const router = useRouter();
 
@@ -110,34 +111,46 @@ function Index({}: Props) {
   return (
     <form
       onSubmit={form.onSubmit(async (values) => {
-        const { data, error } = await supabase.auth.signUp({
-          email: values.email,
-          password: values.password,
-          options: {
-            data: {
-              first_name: values.firstname,
-              last_name: values.lastname,
-              balance: 0,
-              birthday: values.birthday,
-            },
-          },
-        });
+        let emails: any = [];
+        const { data: emailExit, error: errorEmail } = await supabase
+          .from('clients')
+          .select('email')
+          .eq('email', values.email);
 
-        if (!error) {
-          const { data: clients, error: clientError } = await supabase
-            .from('clients')
-            .insert([
-              {
-                email: values.email,
+        emails = emailExit;
+
+        if (emails?.length <= 0) {
+          const { data, error } = await supabase.auth.signUp({
+            email: values.email,
+            password: values.password,
+            options: {
+              data: {
                 first_name: values.firstname,
                 last_name: values.lastname,
+                balance: 0,
                 birthday: values.birthday,
-                gender: gender,
               },
-            ]);
-          router.push('/validate');
+            },
+          });
+
+          if (!error) {
+            const { data: clients, error: clientError } = await supabase
+              .from('clients')
+              .insert([
+                {
+                  email: values.email,
+                  first_name: values.firstname,
+                  last_name: values.lastname,
+                  birthday: values.birthday,
+                  gender: gender,
+                },
+              ]);
+            router.push('/validate');
+          } else {
+            alert('Hubo un error: ' + error);
+          }
         } else {
-          alert('Hubo un error: ' + error);
+          alert('El correo ya existe');
         }
       })}
       style={{
