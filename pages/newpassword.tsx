@@ -12,7 +12,7 @@ function NewPassword({}: Props) {
   React.useEffect(() => {
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (event == 'PASSWORD_RECOVERY') {
-        const newPassword = prompt(
+        const newPassword: any = prompt(
           'What would you like your new password to be?'
         );
         const { data, error } = await supabase.auth.updateUser({
