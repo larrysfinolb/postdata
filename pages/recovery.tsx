@@ -14,7 +14,9 @@ function Recovery({}: Props) {
   };
 
   const handleButton = async () => {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://postdata-two.vercel.app/newpassword',
+    });
     if (error) {
       alert(error);
     } else {
