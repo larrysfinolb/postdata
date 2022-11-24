@@ -20,7 +20,8 @@ const StyledSubTitle = styled.div<Props>`
 `;
 
 function GenrePage() {
-  const [books, setBooks] = React.useState<any>(null);
+  const [books, setBooks] = React.useState<any>([]);
+  const [genreName, setGenreName] = React.useState<any>('');
   const router = useRouter();
   const { gid } = router.query;
 
@@ -35,13 +36,20 @@ function GenrePage() {
         .from('books')
         .select('*');
 
-      console.log(genresBooks, booksData);
+      let { data: genreNameData, error: genreError } = await supabase
+        .from('genres')
+        .select('name')
+        .eq('id', gid);
 
       const genresBooksFilter = genresBooks?.map((idGenre) => idGenre.books_id);
 
       const filterData = booksData?.filter((bookData) =>
         genresBooksFilter?.includes(bookData.id)
       );
+
+      if (genreNameData) {
+        setGenreName(genreNameData[0].name);
+      }
 
       if (filterData) {
         setBooks(filterData);
@@ -53,10 +61,10 @@ function GenrePage() {
   return (
     <Layout title="libros" Header={<Header />}>
       <Heading order={1} styles={{ textAlign: 'center' }}>
-        Libros
+        {`Libros de ${genreName}`}
       </Heading>
 
-      <StyledSubTitle>Todos los libros disponibles</StyledSubTitle>
+      <StyledSubTitle>{`Todos los libros disponibles de ${genreName}`}</StyledSubTitle>
       <Divider size="sm" />
       {books && (
         <Group style={{ placeContent: 'center', gap: '0px' }}>

@@ -92,7 +92,7 @@ function History({}: Props) {
         Este es tu historial de los libros comprados en esta cuenta.
       </Text>
       <StyledContainer>
-        {purchases && (
+        {purchases.length > 0 ? (
           <StyledList>
             {purchases.map((purchase: any) => {
               return (
@@ -120,6 +120,8 @@ function History({}: Props) {
               );
             })}
           </StyledList>
+        ) : (
+          <Text size={18}>No hay registros</Text>
         )}
       </StyledContainer>
     </Layout>
